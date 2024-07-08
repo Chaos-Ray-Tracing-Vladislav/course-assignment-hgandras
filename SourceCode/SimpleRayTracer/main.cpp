@@ -269,9 +269,14 @@ void animation()
 
 }
 
+void testJson()
+{
+
+}
+
 int main()
 {
-	//Task2
+	/*//Task2
 	RandomImage();
 	CircleImage();
 
@@ -289,6 +294,6 @@ int main()
 	//Task6
 	renderShapeMovedCamera();
 	camMovements();
-	animation();
+	animation();*/
 }
 

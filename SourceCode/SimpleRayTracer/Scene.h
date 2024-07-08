@@ -4,6 +4,7 @@
 #include "Ray.h"
 #include "Image.h"
 #include "Vector.h"
+#include "nlohmann/json.hpp"
 #include <vector>
 #include <algorithm>
 #include <string>
@@ -55,5 +56,11 @@ struct Scene {
 			}
 		}
 		cam.image.writePPM(imgName);
+	}
+
+	static void FromFile(std::string path)
+	{
+		nlohmann::json content;
+		content.parse(path);
 	}
 };
