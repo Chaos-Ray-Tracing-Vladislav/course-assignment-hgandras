@@ -24,7 +24,7 @@ struct Frame
 	Vector3 ToLocal(Vector3& p)
 	{
 		Vector4 point(p);
-		Vector4 transformed = ToLocal(p);
+		Vector4 transformed = ToLocal(point);
 		return Vector3(transformed.x, transformed.y, transformed.z);
 	}
 
@@ -48,13 +48,9 @@ struct Frame
 		Vector4 c2 = transform.col2();
 		Vector4 c3 = transform.col3();
 
-		Vector3 rc1(c1.x, c1.y, c1.z);
-		Vector3 rc2(c2.x, c2.y, c2.z);
-		Vector3 rc3(c3.x, c3.y, c3.z);
-
-		Matrix3 rot(rc1, rc2, rc3);
+		Matrix3 rot(c1.xyz(), c2.xyz(), c3.xyz());
 		
-		Matrix4 inverse(rot.T(), -transform.col4().xyz());
+		Matrix4 inverse(rot, -transform.col4().xyz());
 		return inverse * p;
 	}
 

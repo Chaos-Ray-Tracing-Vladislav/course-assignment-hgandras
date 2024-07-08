@@ -68,36 +68,47 @@ public:
 	}
 
 	//These will all just rotate or translate the camera frame
-	void Dolly()
+	void Dolly(float length)
 	{
+		Matrix4 t = Matrix4::CreateTranslation(frame.orientation().col3().norm()*length);
+		frame.transform = t * frame.transform;
+	}
+
+	void Truck(float length)
+	{
+		
+		Matrix4 t = Matrix4::CreateTranslation(frame.orientation().col1().norm() * length);
+		frame.transform = t * frame.transform;
 
 	}
 
-	void Truck()
+	void Pedestal(float length)
 	{
-
+		Matrix4 t = Matrix4::CreateTranslation(frame.orientation().col2().norm() * length);
+		frame.transform = t * frame.transform;
 	}
 
-	void Pedestal()
-	{
-
-	}
-
-	void Pan(float degree)
+	void Pan(float angle)
 	{
 		float PI = acos(-1);
-		float rad = degree / 360 * PI;
+		float rad = angle / 360 * PI;
 		Matrix4 rotation = Matrix4::CreateRotation(0, rad, 0);
 		frame.transform = rotation * frame.transform;
 	}
 
-	void Tilt()
+	void Tilt(float angle)
 	{
-
+		float PI = acos(-1);
+		float rad = angle / 360 * PI;
+		Matrix4 rotation = Matrix4::CreateRotation(rad, 0,0);
+		frame.transform = rotation * frame.transform;
 	}
 
-	void Roll()
+	void Roll(float angle)
 	{
-
+		float PI = acos(-1);
+		float rad = angle / 360 * PI;
+		Matrix4 rotation = Matrix4::CreateRotation(0,0, rad);
+		frame.transform = rotation * frame.transform;
 	}
 };
