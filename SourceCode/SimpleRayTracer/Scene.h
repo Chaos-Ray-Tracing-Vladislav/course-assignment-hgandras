@@ -131,6 +131,20 @@ public:
 			objects.push_back(obj);
 		}
 
+		//Lights
+		nlohmann::json lights = data["lights"];
+		std::vector<Light> lightList;
+		for (int i = 0; i < lights.size(); i++)
+		{
+			nlohmann::json light = lights[i];
+
+			std::vector<float> posVec;
+			posVec.insert(posVec.begin(), light["position"].begin(), light["position"].end());
+
+			Light obj{ light["intensity"],Vector3(posVec[0],posVec[1],posVec[2])};
+			lightList.push_back(obj);
+		}
+
 		//Final struct
 		Settings sceneSettings{
 			Color((int)(bgCol[0] * 255),(int)(bgCol[1] * 255),(int)(bgCol[2] * 255)),
@@ -140,7 +154,9 @@ public:
 			matrix,
 			position,
 
-			objects
+			objects,
+
+			lightList
 		};
 
 		return Scene(sceneSettings);
