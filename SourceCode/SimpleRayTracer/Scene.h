@@ -26,42 +26,34 @@ struct Scene {
 	}
 
 	void Render(std::string imgName) {
-		std::vector<Geometry::Intersection> intersections;
 		for (int i = 0; i < cam.image.w * cam.image.h; i++)
 		{
+			Geometry::Intersection closestIntersection;
+			float closestT = 100000;
+			bool intersected = false;
 			int x = i % cam.image.w;
 			int y = i / cam.image.w;
 			Ray ray = cam.CastRay(x, y);
-			intersections.reserve(geometry.size());
 
 			for (int j = 0; j < geometry.size(); j++)
 			{
 				auto intersection = geometry[j].Intersect(ray);
-				if (intersection)
+				if (intersection && intersection.value().t<closestT)
 				{
-					intersections.push_back(intersection.value());
+					closestIntersection = intersection.value();
+					closestT = closestIntersection.t;
+					intersected = true;
 				}
 			}
 
-			//Sort intersections, and get material
-			if (intersections.empty())
+			if (!intersected)
 			{
 				cam.image.setPixel(x, y, bg);
 			}
 			else {
-				std::sort(intersections.begin(), intersections.end(), customSort);
-				cam.image.setPixel(x, y, intersections[0].material.color);
+				cam.image.setPixel(x, y, closestIntersection.material.color);
 			}
-			intersections.clear();
 		}
 		cam.image.writePPM(imgName);
 	}
-private:
-	struct
-	{
-		bool operator()(Geometry::Intersection a, Geometry::Intersection b) const { return a.t<b.t; }
-	}
-	customSort;
-
-
 };

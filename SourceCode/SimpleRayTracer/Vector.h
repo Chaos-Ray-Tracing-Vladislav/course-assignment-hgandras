@@ -28,7 +28,7 @@ struct Vector2 {
 
 	//Properties
 	float length() { return sqrtf(x*x+y*y); }
-	Vector2 norm() { return Vector2(x / length(), y / length()); }
+	Vector2 norm() { return Vector2(x , y )/length(); }
 
 	static Vector2 zero() { return Vector2(0, 0); }
 };
@@ -51,7 +51,7 @@ struct Vector3 {
 
 	}
 
-	Vector3(Vector2 vec) : x(vec.x), y(vec.y), z(0)
+	Vector3(Vector2 vec) : x(vec.x), y(vec.y), z(1)
 	{
 
 	}
@@ -68,8 +68,8 @@ struct Vector3 {
 	Vector3 operator-() const { return Vector3(-x, -y,-z); }
 
 	//Properties
-	float length() { return sqrtf(x * x + y * y+z*z); }
-	Vector3 norm() { return Vector3(x / length(), y / length(),z/length()); }
+	float length() { return sqrtf(x * x + y * y + z * z); }
+	Vector3 norm() { return Vector3(x , y ,z) / length(); }
 
 	static Vector3 zero() { return Vector3(0, 0, 0); }
 	static Vector3 up() { return Vector3(0, 1, 0); }
@@ -121,7 +121,7 @@ struct Vector4 {
 
 	//Properties
 	float length() { return sqrtf(x * x + y * y+z*z+w*w); }
-	Vector4 norm() { return Vector4(x / length(), y / length(), z / length(),w/length()); }
+	Vector4 norm() { return Vector4(x , y , z,w) / length(); }
 
 	static Vector4 zero() { return Vector4(0, 0, 0,0); }
 	
@@ -335,7 +335,7 @@ public:
 		Vector4 r1new(Dot(row1(), other.col1()), Dot(row1(), other.col2()), Dot(row1(), other.col3()),Dot(row1(),other.col4()));
 		Vector4 r2new(Dot(row2(), other.col1()), Dot(row2(), other.col2()), Dot(row2(), other.col3()), Dot(row2(), other.col4()));
 		Vector4 r3new(Dot(row3(), other.col1()), Dot(row3(), other.col2()), Dot(row3(), other.col3()), Dot(row3(), other.col4()));
-		Vector4 r4new(Dot(row4(), other.col1()), Dot(row4(), other.col4()), Dot(row4(), other.col3()), Dot(row4(), other.col4()));
+		Vector4 r4new(Dot(row4(), other.col1()), Dot(row4(), other.col2()), Dot(row4(), other.col3()), Dot(row4(), other.col4()));
 
 		return Matrix4(r1new, r2new, r3new,r4new).T();
 	}
