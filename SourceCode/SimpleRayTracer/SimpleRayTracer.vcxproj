@@ -142,6 +142,7 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="Frame.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Ray.h" />
