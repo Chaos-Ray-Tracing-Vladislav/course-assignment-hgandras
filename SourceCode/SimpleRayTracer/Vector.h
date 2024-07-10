@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 
+//TODO: REFACTOR
 //TODO: Write xz,xy,xyz,yz ... getters to vector 3 and 4
 struct Vector2 {
 	float x, y;
@@ -98,6 +99,8 @@ struct Vector4 {
 
 	}
 
+	
+
 	Vector4(float x, float y, float z,float w) : x(x), y(y), z(z),w(w)
 	{
 
@@ -143,8 +146,12 @@ public:
 	
 	Matrix3()
 	{
-		for (int i = 0; i < 9; i++)
-			data.push_back(0);
+		data.insert(data.begin(), 9, 0);
+	}
+
+	Matrix3(std::vector<float>& data) : data(data)
+	{
+
 	}
 
 	Matrix3(const Vector3& c1,const Vector3& c2,const Vector3& c3)
@@ -225,8 +232,12 @@ public:
 
 	Matrix4()
 	{
-		for (int i = 0; i < 16; i++)
-			data.push_back(0);
+		data.insert(data.begin(), 16, 0);
+	}
+
+	Matrix4(std::vector<float>& data) : data(data)
+	{
+
 	}
 
 	//Constructor takes columns 
