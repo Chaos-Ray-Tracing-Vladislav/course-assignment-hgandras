@@ -5,10 +5,11 @@
 #include <stdexcept>
 #include <fstream>
 #include <format>
+#include "assert.h"
 
 class Image {
 public:
-	const int w, h;
+	int w, h;
 	std::vector<Color> image;
 
 	Image() : w(1920), h(1080)
@@ -23,10 +24,7 @@ public:
 
 	void setPixel(int x, int y, Color value)
 	{
-		if (x > w || x<0 || y>h || y < 0)
-		{
-			std::invalid_argument("Pixel coordinate is outside of image!");
-		}
+		assert(x < w || x>0 || y<h || y > 0);
 		image[y * w + x] = value;
 	}
 
