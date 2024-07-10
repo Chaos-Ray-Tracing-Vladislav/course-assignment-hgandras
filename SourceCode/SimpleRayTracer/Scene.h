@@ -14,6 +14,7 @@
 struct Scene {
 private:
 	std::vector<Geometry::Triangle> geometry;
+
 public:
 	Settings sceneSettings;
 	Camera camera;
@@ -33,7 +34,7 @@ public:
 
 	Scene(Settings sceneSettings) : sceneSettings(sceneSettings)							
 	{
-		Frame frame(Matrix3(sceneSettings.matrix), Vector3(sceneSettings.position[0], sceneSettings.position[1], sceneSettings.position[2]));
+		Frame frame(Matrix3(sceneSettings.matrix).T(), Vector3(sceneSettings.position[0], sceneSettings.position[1], sceneSettings.position[2]));
 		Camera cam(sceneSettings.width, sceneSettings.height, frame, 90);
 		Image img(sceneSettings.width, sceneSettings.height);
 
@@ -58,7 +59,6 @@ public:
 				geometry.push_back(Geometry::Triangle(v0, v1, v2));
 			}
 		}
-		
 	}
 
 	void Render(std::string imgName) {
@@ -73,7 +73,6 @@ public:
 
 			for (int j = 0; j < geometry.size(); j++)
 			{
-				
 				auto intersection = geometry[j].Intersect(ray);
 				if (intersection && intersection.value().t<closestT)
 				{
@@ -88,6 +87,14 @@ public:
 				image.setPixel(x, y, sceneSettings.bgCol);
 			}
 			else {
+				Color matCol = closestIntersection.material.color;
+				Vector3 finalColor = Vector3(matCol.r/255.0,matCol.g/255.0,matCol.b/255.0);
+
+				float lambertCoefficient = 0;
+				for (int i = 0; i < sceneSettings.lights.size(); i++)
+				{
+					
+				}
 				image.setPixel(x, y, closestIntersection.material.color);
 			}
 		}
