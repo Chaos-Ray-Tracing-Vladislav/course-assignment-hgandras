@@ -271,7 +271,16 @@ void animation()
 
 void testJson()
 {
-	Scene::FromFile(SCENE_PATH + "scene0.crtscene").Render(PATH + "\\scenefile.ppm");
+	Scene::FromFile(SCENE_PATH + "scene0.crtscene").Render(PATH + "\\PPM\\scene0.ppm");
+	std::cout << "Scene0 rendered" << std::endl;
+	Scene::FromFile(SCENE_PATH + "scene1.crtscene").Render(PATH + "\\PPM\\scene1.ppm");
+	std::cout << "Scene1 rendered" << std::endl;
+	Scene::FromFile(SCENE_PATH + "scene2.crtscene").Render(PATH + "\\PPM\\scene2.ppm");
+	std::cout << "Scene2 rendered" << std::endl;
+	Scene::FromFile(SCENE_PATH + "scene3.crtscene").Render(PATH + "\\PPM\\scene3.ppm");
+	std::cout << "Scene3 rendered" << std::endl;
+	Scene::FromFile(SCENE_PATH + "scene4.crtscene").Render(PATH + "\\PPM\\scene4.ppm");
+	std::cout << "Scene4 rendered" << std::endl;
 }
 
 int main()
@@ -296,6 +305,7 @@ int main()
 	camMovements();
 	animation();*/
 
+	//Task7
 	testJson();
 }
 

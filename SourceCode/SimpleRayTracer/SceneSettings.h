@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "Color.h"
+#include "Geometry.h"
 
 struct Settings {
 	Color bgCol;
@@ -10,8 +11,7 @@ struct Settings {
 	std::vector<float> matrix;
 	std::vector<float> position;
 
-	std::vector<float> vertices;
-	std::vector<int> triangles;
+	std::vector<Geometry::Object> objects;
 };
 
 

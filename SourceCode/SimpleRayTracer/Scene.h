@@ -41,19 +41,24 @@ public:
 		camera = cam;
 
 		//Precalculate triangles
-		for (int i = 0; i < sceneSettings.triangles.size() ; i+=3)
+		for (int obID = 0; obID < sceneSettings.objects.size(); obID++)
 		{
-			int ind0 = sceneSettings.triangles[i] * 3;
-			Vector3 v0(sceneSettings.vertices[ind0], sceneSettings.vertices[ind0 + 1], sceneSettings.vertices[ind0 + 2]);
+			Geometry::Object object = sceneSettings.objects[obID];
+			for (int triangleID = 0; triangleID < object.triangles.size(); triangleID += 3)
+			{
+				int ind0 = object.triangles[triangleID] * 3;
+				Vector3 v0(object.vertices[ind0], object.vertices[ind0 + 1], object.vertices[ind0 + 2]);
 
-			int ind1 = sceneSettings.triangles[i + 1] * 3;
-			Vector3 v1(sceneSettings.vertices[ind1], sceneSettings.vertices[ind1 + 1], sceneSettings.vertices[ind1 + 2]);
+				int ind1 = object.triangles[triangleID + 1] * 3;
+				Vector3 v1(object.vertices[ind1], object.vertices[ind1 + 1], object.vertices[ind1 + 2]);
 
-			int ind2 = sceneSettings.triangles[i + 2] * 3;
-			Vector3 v2(sceneSettings.vertices[ind2], sceneSettings.vertices[ind2 + 1], sceneSettings.vertices[ind2 + 2]);
+				int ind2 = object.triangles[triangleID + 2] * 3;
+				Vector3 v2(object.vertices[ind2], object.vertices[ind2 + 1], object.vertices[ind2 + 2]);
 
-			geometry.push_back(Geometry::Triangle(v0, v1, v2));
+				geometry.push_back(Geometry::Triangle(v0, v1, v2));
+			}
 		}
+		
 	}
 
 	void Render(std::string imgName) {
@@ -112,25 +117,30 @@ public:
 		position.insert(position.begin(), camSettingsJson["position"].begin(), camSettingsJson["position"].end());
 		
 		//Objects
-		nlohmann::json geometry = data["objects"][0];
-		
-		std::vector<float> vertices;
-		vertices.insert(vertices.begin(), geometry["vertices"].begin(), geometry["vertices"].end());
+		nlohmann::json geometry = data["objects"];
+		std::vector<Geometry::Object> objects;
+		for (int i = 0; i < geometry.size(); i++)
+		{
+			std::vector<float> vertices;
+			vertices.insert(vertices.begin(), geometry[i]["vertices"].begin(), geometry[i]["vertices"].end());
 
-		std::vector<int> triangles;
-		triangles.insert(triangles.begin(), geometry["triangles"].begin(), geometry["triangles"].end());
+			std::vector<int> triangles;
+			triangles.insert(triangles.begin(), geometry[i]["triangles"].begin(), geometry[i]["triangles"].end());
+
+			Geometry::Object obj{ vertices,triangles };
+			objects.push_back(obj);
+		}
 
 		//Final struct
-		Settings sceneSettings{ 
-			Color((int)(bgCol[0]*255),(int)(bgCol[1]*255),(int)(bgCol[2]*255)),
+		Settings sceneSettings{
+			Color((int)(bgCol[0] * 255),(int)(bgCol[1] * 255),(int)(bgCol[2] * 255)),
 			settings["image_settings"]["width"],
 			settings["image_settings"]["height"],
 
 			matrix,
 			position,
 
-			vertices,
-			triangles 
+			objects
 		};
 
 		return Scene(sceneSettings);
