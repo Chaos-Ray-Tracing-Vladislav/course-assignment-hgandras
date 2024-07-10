@@ -3,6 +3,7 @@
 #include "Frame.h"
 #include "Image.h"
 #include "Ray.h"
+#include "assert.h"
 
 const double PI = acos(-1);
 
@@ -17,21 +18,21 @@ private:
 	{
 		float alpha = FOV / 2.f;
 		planeW = tanf(alpha/180*PI) * 2;
-		planeH = planeW * image.h / image.w;
-		pixelStep = planeW / image.w;
+		planeH = planeW * h / w;
+		pixelStep = planeW / w;
 	}
 
 public:
 	Frame frame;
 	float FOV;
-	Image image;
+	int w, h;
 
 	Camera() 
 	{
 		setFOV(90);
 	}
 
-	Camera(Image& img, Frame frame, float FOV) :frame(frame), image(img), FOV(FOV)
+	Camera(int w,int h, Frame frame, float FOV) :w(w),h(h), frame(frame), FOV(FOV)
 	{
 		update_params();
 	}
@@ -40,8 +41,7 @@ public:
 	//and the camera faces the -z direction. The returned ray is in the world coordinate system.
 	Ray CastRay(int x, int y)
 	{
-		if (x > image.w || x<0 || y>image.h || y < 0)
-			throw std::invalid_argument("The pixel index was outside of the image range");
+		assert(x < w || x > 0 || y <  h || y > 0);
 		
 		//NDC space (Not really, because these are the real world dimensions measured from the corner of the 
 		// image)
@@ -90,7 +90,7 @@ public:
 
 	void Pan(float angle)
 	{
-		float PI = acos(-1);
+		float PI = acosf(-1);
 		float rad = angle / 360 * PI;
 		Matrix4 rotation = Matrix4::CreateRotation(0, rad, 0);
 		frame.transform = rotation * frame.transform;
@@ -98,7 +98,7 @@ public:
 
 	void Tilt(float angle)
 	{
-		float PI = acos(-1);
+		float PI = acosf(-1);
 		float rad = angle / 360 * PI;
 		Matrix4 rotation = Matrix4::CreateRotation(rad, 0,0);
 		frame.transform = rotation * frame.transform;
@@ -106,7 +106,7 @@ public:
 
 	void Roll(float angle)
 	{
-		float PI = acos(-1);
+		float PI = acosf(-1);
 		float rad = angle / 360 * PI;
 		Matrix4 rotation = Matrix4::CreateRotation(0,0, rad);
 		frame.transform = rotation * frame.transform;
