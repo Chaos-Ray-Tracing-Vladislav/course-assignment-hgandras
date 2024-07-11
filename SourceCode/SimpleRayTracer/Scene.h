@@ -12,11 +12,9 @@
 #include <string>
 
 struct Scene {
-private:
-	std::vector<Geometry::Triangle> geometry;
-
-public:
 	Settings sceneSettings;
+	
+	//generated from scene settings. Might be moved to the raytracer
 	Camera camera;
 	Image image;
 
@@ -35,70 +33,11 @@ public:
 	Scene(Settings sceneSettings) : sceneSettings(sceneSettings)							
 	{
 		Frame frame(Matrix3(sceneSettings.matrix).T(), Vector3(sceneSettings.position[0], sceneSettings.position[1], sceneSettings.position[2]));
-		Camera cam(sceneSettings.width, sceneSettings.height, frame, 90);
+		Camera cam(sceneSettings.width, sceneSettings.height, frame, 120);
 		Image img(sceneSettings.width, sceneSettings.height);
 
 		image = img;
 		camera = cam;
-
-		//Precalculate triangles
-		for (int obID = 0; obID < sceneSettings.objects.size(); obID++)
-		{
-			Geometry::Object object = sceneSettings.objects[obID];
-			for (int triangleID = 0; triangleID < object.triangles.size(); triangleID += 3)
-			{
-				int ind0 = object.triangles[triangleID] * 3;
-				Vector3 v0(object.vertices[ind0], object.vertices[ind0 + 1], object.vertices[ind0 + 2]);
-
-				int ind1 = object.triangles[triangleID + 1] * 3;
-				Vector3 v1(object.vertices[ind1], object.vertices[ind1 + 1], object.vertices[ind1 + 2]);
-
-				int ind2 = object.triangles[triangleID + 2] * 3;
-				Vector3 v2(object.vertices[ind2], object.vertices[ind2 + 1], object.vertices[ind2 + 2]);
-
-				geometry.push_back(Geometry::Triangle(v0, v1, v2));
-			}
-		}
-	}
-
-	void Render(std::string imgName) {
-		for (int i = 0; i < image.w * image.h; i++)
-		{
-			Geometry::Intersection closestIntersection;
-			float closestT = FLT_MAX;
-			bool intersected = false;
-			int x = i % image.w;
-			int y = i / image.w;
-			Ray ray = camera.CastRay(x, y);
-
-			for (int j = 0; j < geometry.size(); j++)
-			{
-				auto intersection = geometry[j].Intersect(ray);
-				if (intersection && intersection.value().t<closestT)
-				{
-					closestIntersection = intersection.value();
-					closestT = closestIntersection.t;
-					intersected = true;
-				}
-			}
-
-			if (!intersected)
-			{
-				image.setPixel(x, y, sceneSettings.bgCol);
-			}
-			else {
-				Color matCol = closestIntersection.material.color;
-				Vector3 finalColor = Vector3(matCol.r/255.0,matCol.g/255.0,matCol.b/255.0);
-
-				float lambertCoefficient = 0;
-				for (int i = 0; i < sceneSettings.lights.size(); i++)
-				{
-					
-				}
-				image.setPixel(x, y, closestIntersection.material.color);
-			}
-		}
-		image.writePPM(imgName);
 	}
 
 	static Scene FromFile(std::string path)
@@ -126,16 +65,35 @@ public:
 		//Objects
 		nlohmann::json geometry = data["objects"];
 		std::vector<Geometry::Object> objects;
+		std::vector<int> triangles;
+		std::vector<float> vertices;
 		for (int i = 0; i < geometry.size(); i++)
 		{
-			std::vector<float> vertices;
+			triangles.clear();
+			vertices.clear();
+
 			vertices.insert(vertices.begin(), geometry[i]["vertices"].begin(), geometry[i]["vertices"].end());
-
-			std::vector<int> triangles;
 			triangles.insert(triangles.begin(), geometry[i]["triangles"].begin(), geometry[i]["triangles"].end());
+			
+			std::vector<Geometry::Triangle> faces;
 
-			Geometry::Object obj{ vertices,triangles };
-			objects.push_back(obj);
+			for (int triangleID = 0; triangleID < triangles.size(); triangleID += 3)
+			{
+				int ind0 = triangles[triangleID] * 3;
+				Vector3 v0(vertices[ind0], vertices[ind0 + 1], vertices[ind0 + 2]);
+
+				int ind1 = triangles[triangleID + 1] * 3;
+				Vector3 v1(vertices[ind1], vertices[ind1 + 1], vertices[ind1 + 2]);
+
+				int ind2 = triangles[triangleID + 2] * 3;
+				Vector3 v2(vertices[ind2], vertices[ind2 + 1], vertices[ind2 + 2]);
+
+				Geometry::Triangle tr(v0, v1, v2);
+				faces.push_back(tr);
+			}
+			
+			Material mat{ Vector3(0.0005,0,0) };
+			objects.push_back(Geometry::Object{ faces,mat });
 		}
 
 		//Lights
@@ -163,7 +121,11 @@ public:
 
 			objects,
 
-			lightList
+			lightList,
+
+			//Ambient coefficient and ambient light
+			0.1,  
+			Vector3(1,1,1)
 		};
 
 		return Scene(sceneSettings);
