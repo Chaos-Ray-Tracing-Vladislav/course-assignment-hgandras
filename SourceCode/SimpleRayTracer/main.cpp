@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Geometry.h"
 #include "Scene.h"
+#include "Raytracer.h"
 
 #define WIDTH 400
 #define HEIGHT 400
@@ -89,14 +90,14 @@ void Triangles()
 	std::cout << Cross(Vector3(3,-3,1), Vector3(-12,12,-4)).length() << std::endl;
 
 	//Triangle normals
-	std::cout << Geometry::Triangle(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3)).normal() << std::endl;
-	std::cout << Geometry::Triangle(Vector3(0,0,-1), Vector3(1,0,1), Vector3(-1,0,1)).normal() << std::endl;
-	std::cout << Geometry::Triangle(Vector3(0.56,1.11,1.23), Vector3(0.44,-2.368,-0.54), Vector3(-1.56,0.15,-1.92)).normal() << std::endl;
+	std::cout << Geometry::Triangle(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3)).normal << std::endl;
+	std::cout << Geometry::Triangle(Vector3(0,0,-1), Vector3(1,0,1), Vector3(-1,0,1)).normal << std::endl;
+	std::cout << Geometry::Triangle(Vector3(0.56,1.11,1.23), Vector3(0.44,-2.368,-0.54), Vector3(-1.56,0.15,-1.92)).normal << std::endl;
 
 	//Triangle area
-	std::cout << Geometry::Triangle(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3)).area() << std::endl;
-	std::cout << Geometry::Triangle(Vector3(0, 0, -1), Vector3(1, 0, 1), Vector3(-1, 0, 1)).area() << std::endl;
-	std::cout << Geometry::Triangle(Vector3(0.56, 1.11, 1.23), Vector3(0.44, -2.368, -0.54), Vector3(-1.56, 0.15, -1.92)).area() << std::endl;
+	std::cout << Geometry::Triangle(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3)).area << std::endl;
+	std::cout << Geometry::Triangle(Vector3(0, 0, -1), Vector3(1, 0, 1), Vector3(-1, 0, 1)).area << std::endl;
+	std::cout << Geometry::Triangle(Vector3(0.56, 1.11, 1.23), Vector3(0.44, -2.368, -0.54), Vector3(-1.56, 0.15, -1.92)).area << std::endl;
 
 }
 
@@ -107,7 +108,8 @@ void renderTriangle()
 	Geometry::Triangle triangle(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3));
 	std::vector<Geometry::Triangle>geometry{ triangle };
 	Scene scene(cam,geometry);
-	scene.Render(PATH + "\\PPM\\Triangle.ppm");
+	RayTracer renderer(scene);
+	renderer.Render(PATH + "\\PPM\\Triangle.ppm");
 }
 
 void renderTriangles()
@@ -116,11 +118,12 @@ void renderTriangles()
 	Camera cam(WIDTH,HEIGHT, Frame(), FOV);
 
 	Geometry::Triangle triangle1(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3));
-	Geometry::Triangle triangle2(Vector3(-1, -1, -2), Vector3(1, -1, -2), Vector3(0, 1, -2),Material::ColorMaterial(Color(0,255,0)));
+	Geometry::Triangle triangle2(Vector3(-1, -1, -2), Vector3(1, -1, -2), Vector3(0, 1, -2),Material(Vector3(0,255,0)));
 
 	std::vector<Geometry::Triangle>geometry{ triangle1,triangle2 };
 	Scene scene(cam, geometry);
-	scene.Render(PATH + "\\PPM\\Triangles.ppm");
+	RayTracer renderer(scene);
+	renderer.Render(PATH + "\\PPM\\Triangles.ppm");
 }
 
 void renderShape()
@@ -128,9 +131,9 @@ void renderShape()
 	Image image(WIDTH, HEIGHT);
 	Camera cam(WIDTH,HEIGHT, Frame(Matrix3::Identity(),Vector3(0,0,-1)), FOV);
 
-	Material::ColorMaterial m1(Color(255, 0, 0));
-	Material::ColorMaterial m2(Color(0, 255, 0));
-	Material::ColorMaterial m3(Color(0, 0,255));
+	Material m1(Vector3(255, 0, 0));
+	Material m2(Vector3(0, 255, 0));
+	Material m3(Vector3(0, 0,255));
 
 	
 	Geometry::Triangle t11(Vector3(0,0,-3), Vector3(0.2,-1,-3), Vector3(-0.2, -1, -3), m1);
@@ -151,7 +154,8 @@ void renderShape()
 
 	std::vector<Geometry::Triangle>geometry{ t11,t12,t13,t21,t22,t23,t31,t32,t33,t41,t42,t43 };
 	Scene scene(cam, geometry);
-	scene.Render(PATH + "\\PPM\\Mill.ppm");
+	RayTracer renderer(scene);
+	renderer.Render(PATH + "\\PPM\\Mill.ppm");
 }
 
 void renderShapeMovedCamera()
@@ -160,9 +164,9 @@ void renderShapeMovedCamera()
 	Camera cam(WIDTH, HEIGHT, Frame(Matrix3::Identity(), Vector3(-3, 0, -1)), FOV);
 	cam.Pan(60);
 
-	Material::ColorMaterial m1(Color(255, 0, 0));
-	Material::ColorMaterial m2(Color(0, 255, 0));
-	Material::ColorMaterial m3(Color(0, 0, 255));
+	Material m1(Vector3(255, 0, 0));
+	Material m2(Vector3(0, 255, 0));
+	Material m3(Vector3(0, 0, 255));
 
 	Geometry::Triangle t11(Vector3(0, 0, -3), Vector3(0.2, -1, -3), Vector3(-0.2, -1, -3), m1);
 	Geometry::Triangle t12(Vector3(0, 0, -2.9), Vector3(0.15, -0.9, -2.9), Vector3(-0.15, -0.9, -2.9), m2);
@@ -182,9 +186,11 @@ void renderShapeMovedCamera()
 
 	std::vector<Geometry::Triangle>geometry{ t11,t12,t13,t21,t22,t23,t31,t32,t33,t41,t42,t43 };
 	Scene scene(cam, geometry);
-	scene.Render(PATH + "\\PPM\\MillPan.ppm");
+	RayTracer renderer(scene);
+	renderer.Render(PATH + "\\PPM\\MillPan.ppm");
 }
 
+/*
 void camMovements()
 {
 	Geometry::Triangle triangle(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3));
@@ -267,20 +273,30 @@ void animation()
 		frameCount++;
 	}
 
-}
+}*/
 
-void testJson()
+void Task8()
 {
-	Scene::FromFile(SCENE_PATH + "scene0.crtscene").Render(PATH + "\\PPM\\scene0.ppm");
+
+	Scene scene0 = Scene::FromFile(SCENE_PATH + "\\Task8\\scene0.crtscene");
+	RayTracer renderer0(scene0);
+	renderer0.Render(PATH + "\\PPM\\scene0.ppm");
 	std::cout << "Scene0 rendered" << std::endl;
-	/*Scene::FromFile(SCENE_PATH + "scene1.crtscene").Render(PATH + "\\PPM\\scene1.ppm");
+
+	Scene scene1 = Scene::FromFile(SCENE_PATH + "\\Task8\\scene1.crtscene");
+	RayTracer renderer1(scene1);
+	renderer1.Render(PATH + "\\PPM\\scene1.ppm");
 	std::cout << "Scene1 rendered" << std::endl;
-	Scene::FromFile(SCENE_PATH + "scene2.crtscene").Render(PATH + "\\PPM\\scene2.ppm");
+
+	Scene scene2 = Scene::FromFile(SCENE_PATH + "\\Task8\\scene2.crtscene");
+	RayTracer renderer2(scene2);
+	renderer2.Render(PATH + "\\PPM\\scene2.ppm");
 	std::cout << "Scene2 rendered" << std::endl;
-	Scene::FromFile(SCENE_PATH + "scene3.crtscene").Render(PATH + "\\PPM\\scene3.ppm");
+
+	Scene scene3 = Scene::FromFile(SCENE_PATH + "\\Task8\\scene3.crtscene");
+	RayTracer renderer3(scene3);
+	renderer3.Render(PATH + "\\PPM\\scene3.ppm");
 	std::cout << "Scene3 rendered" << std::endl;
-	Scene::FromFile(SCENE_PATH + "scene4.crtscene").Render(PATH + "\\PPM\\scene4.ppm");
-	std::cout << "Scene4 rendered" << std::endl;*/
 }
 
 int main()
@@ -306,6 +322,6 @@ int main()
 	animation();*/
 
 	//Task7
-	testJson();
+	Task8();
 }
 

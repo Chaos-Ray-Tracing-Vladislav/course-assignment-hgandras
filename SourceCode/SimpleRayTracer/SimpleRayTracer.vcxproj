@@ -146,6 +146,7 @@
     <ClInclude Include="Material.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="Raytracer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneSettings.h" />
     <ClInclude Include="Vector.h" />
