@@ -8,40 +8,28 @@
 namespace Geometry
 {
 	struct Intersection {
-		Material::ColorMaterial material;
 		Vector3 normal;
+		Material material;
 		float t;
-	};
-
-	struct Object {
-		std::vector<float> vertices;
-		std::vector<int> triangles;
 	};
 
 	struct Triangle
 	{
 	
-		Vector3 v1, v2, v3; //Positions of the vertices
-		Material::ColorMaterial material;
+		const Vector3 v1, v2, v3; //Positions of the vertices
+		float area;
+		Vector3 normal;
 		
-		Triangle(Vector3 v1,Vector3 v2,Vector3 v3) : v1(v1),v2(v2),v3(v3),material(Material::ColorMaterial{Color(255,0,0)})
+		Triangle(Vector3 v1,Vector3 v2,Vector3 v3) : v1(v1),v2(v2),v3(v3)
 		{
-			
+			area = Cross(v2 - v1, v3 - v1).length() / 2;
+			normal = Cross(v2 - v1, v3 - v1).norm();
 		}
 
-		Triangle(Vector3 v1, Vector3 v2, Vector3 v3,Material::ColorMaterial color) : v1(v1), v2(v2), v3(v3), material(color)
+		Triangle(Vector3 v1, Vector3 v2, Vector3 v3,Material color) : v1(v1), v2(v2), v3(v3)
 		{
-
-		}
-
-		Vector3 normal()
-		{
-			return Cross(v2-v1, v3-v1).norm();
-		}
-
-		float area()
-		{
-			return Cross(v2 - v1, v3 - v1).length() / 2;
+			area = Cross(v2 - v1, v3 - v1).length() / 2;
+			normal = Cross(v2 - v1, v3 - v1).norm();
 		}
 
 		/// <summary>
@@ -51,14 +39,14 @@ namespace Geometry
 		/// </summary>
 		/// <param name="ray"></param>
 		/// <returns></returns>
-		std::optional<Intersection> Intersect(const Ray& ray)
+		float Intersect(const Ray& ray)
 		{
-			if(Dot(ray.dir,normal()) == 0 )
-				return {};
-			float D = -Dot(normal(), v1);
-			float t = -(Dot(normal(), ray.origin) + D) / Dot(normal(), ray.dir);
+			if(Dot(ray.dir,normal) == 0 )
+				return -1;
+			float D = -Dot(normal, v1);
+			float t = -(Dot(normal, ray.origin) + D) / Dot(normal, ray.dir);
 			if (t<0) 
-				return {};
+				return -1;
 			
 			Vector3 P = ray.origin + t * ray.dir;
 			Vector3 edge0 = v2 - v1;
@@ -67,11 +55,15 @@ namespace Geometry
 			Vector3 C0 = P - v1;
 			Vector3 C1 = P - v2;
 			Vector3 C2 = P - v3;
-			if (Dot(normal(), Cross(edge0, C0)) > 0 &&
-				Dot(normal(), Cross(edge1, C1)) > 0 &&
-				Dot(normal(), Cross(edge2, C2)) > 0) return Intersection{material,normal(),t};
-			return {};
+			if (Dot(normal, Cross(edge0, C0)) > 0 &&
+				Dot(normal, Cross(edge1, C1)) > 0 &&
+				Dot(normal, Cross(edge2, C2)) > 0) return t;
+			return -1;
 		}
+	};
 
+	struct Object {
+		std::vector<Geometry::Triangle> triangles;
+		Material material;
 	};
 }
