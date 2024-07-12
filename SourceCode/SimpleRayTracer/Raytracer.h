@@ -59,16 +59,17 @@ public:
 				Vector3 intersectionPoint = intersection.value().t * ray.dir + ray.origin;
 				float reflectedIntensity = 0.f;
 				Vector3 in;
-				for (int i = 0; i < scene.sceneSettings.lights.size(); i++)
+				for (Light light : scene.sceneSettings.lights)
 				{
-					Light light = scene.sceneSettings.lights[i];
-					in = (light.position - intersectionPoint).norm();
+					in = (light.position - intersectionPoint);
+					float sphereArea = 4 * in.length() * in.length() * PI;
+					in = in.norm();
 					Ray shadowRay(intersectionPoint + scene.sceneSettings.EPSILON*in, in);
 					auto shadow = IntersectRay(shadowRay, scene.sceneSettings.objects);
 					if(!shadow)
-						reflectedIntensity = reflectedIntensity + light.intensity  * std::max(0.0f, Dot(in, intersection.value().normal));
+						reflectedIntensity = reflectedIntensity + light.intensity/sphereArea * std::max(0.0f, Dot(in, intersection.value().normal));
 				}
-				Vector3 finalColor = 255*Min(Vector3(1.f,1.f,1.f), 1/PI * intersection.value().material.albedo * reflectedIntensity);
+				Vector3 finalColor = 255*Min(Vector3(1.f,1.f,1.f),  intersection.value().material.albedo * reflectedIntensity);
 				scene.image.setPixel(x, y, Color((int)finalColor.x,(int)finalColor.y,(int)finalColor.z));
 			}
 			
