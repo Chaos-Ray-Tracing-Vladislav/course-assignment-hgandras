@@ -13,6 +13,11 @@ namespace Geometry
 		float t;
 	};
 
+	struct Object {
+		std::vector<float> vertices;
+		std::vector<int> triangles;
+	};
+
 	struct Triangle
 	{
 	

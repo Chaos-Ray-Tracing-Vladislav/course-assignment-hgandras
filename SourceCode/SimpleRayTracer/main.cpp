@@ -9,7 +9,8 @@
 #define HEIGHT 400
 #define FOV 60
 
-const std::string PATH = "C:\\Gazsi\\Prog\\ChaosCamp\\chaos-ray-tracing-course-assignment-hgandras\\Images";
+const std::string PATH = "C:\\Gazsi\\Prog\\ChaosCamp\\RayTracing\\course-assignment-hgandras\\Images";
+const std::string SCENE_PATH = "C:\\Gazsi\\Prog\\ChaosCamp\\RayTracing\\course-assignment-hgandras\\SourceCode\\Scenes\\";
 
 void RandomImage()
 {
@@ -64,7 +65,7 @@ void CircleImage()
 void rayImage()
 {
 	Image image(WIDTH,HEIGHT);
-	Camera cam(image,Frame(),FOV);
+	Camera cam(WIDTH,HEIGHT,Frame(),FOV);
 	
 	for (int i = 0; i < WIDTH*HEIGHT; i++)
 	{
@@ -102,7 +103,7 @@ void Triangles()
 void renderTriangle()
 {
 	Image image(WIDTH, HEIGHT);
-	Camera cam(image, Frame(), FOV);
+	Camera cam(WIDTH,HEIGHT, Frame(), FOV);
 	Geometry::Triangle triangle(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3));
 	std::vector<Geometry::Triangle>geometry{ triangle };
 	Scene scene(cam,geometry);
@@ -112,7 +113,7 @@ void renderTriangle()
 void renderTriangles()
 {
 	Image image(WIDTH, HEIGHT);
-	Camera cam(image, Frame(), FOV);
+	Camera cam(WIDTH,HEIGHT, Frame(), FOV);
 
 	Geometry::Triangle triangle1(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3));
 	Geometry::Triangle triangle2(Vector3(-1, -1, -2), Vector3(1, -1, -2), Vector3(0, 1, -2),Material::ColorMaterial(Color(0,255,0)));
@@ -125,7 +126,7 @@ void renderTriangles()
 void renderShape()
 {
 	Image image(WIDTH, HEIGHT);
-	Camera cam(image, Frame(Matrix3::Identity(),Vector3(0,0,-1)), FOV);
+	Camera cam(WIDTH,HEIGHT, Frame(Matrix3::Identity(),Vector3(0,0,-1)), FOV);
 
 	Material::ColorMaterial m1(Color(255, 0, 0));
 	Material::ColorMaterial m2(Color(0, 255, 0));
@@ -156,7 +157,7 @@ void renderShape()
 void renderShapeMovedCamera()
 {
 	Image image(WIDTH, HEIGHT);
-	Camera cam(image, Frame(Matrix3::Identity(), Vector3(-3, 0, -1)), FOV);
+	Camera cam(WIDTH, HEIGHT, Frame(Matrix3::Identity(), Vector3(-3, 0, -1)), FOV);
 	cam.Pan(60);
 
 	Material::ColorMaterial m1(Color(255, 0, 0));
@@ -189,34 +190,34 @@ void camMovements()
 	Geometry::Triangle triangle(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3));
 	Image image(WIDTH, HEIGHT);
 
-	Camera cam(image, Frame(), FOV);
+	Camera cam(WIDTH, HEIGHT, Frame(), FOV);
 
 	std::vector<Geometry::Triangle>geometry{ triangle };
 	Scene scene(cam, geometry);
 
-	scene.cam.Dolly(1);
+	scene.camera.Dolly(1);
 	scene.Render(PATH + "\\PPM\\Dolly.ppm");
-	scene.cam.Dolly(-1);
+	scene.camera.Dolly(-1);
 
-	scene.cam.Pan(-30);
+	scene.camera.Pan(-30);
 	scene.Render(PATH + "\\PPM\\Pan.ppm");
-	scene.cam.Pan(30);
+	scene.camera.Pan(30);
 
-	scene.cam.Pedestal(1);
+	scene.camera.Pedestal(1);
 	scene.Render(PATH + "\\PPM\\Pedestal.ppm");
-	scene.cam.Pedestal(-1);
+	scene.camera.Pedestal(-1);
 
-	scene.cam.Roll(30);
+	scene.camera.Roll(30);
 	scene.Render(PATH + "\\PPM\\Roll.ppm");
-	scene.cam.Roll(-30);
+	scene.camera.Roll(-30);
 
-	scene.cam.Tilt(30);
+	scene.camera.Tilt(30);
 	scene.Render(PATH + "\\PPM\\Tilt.ppm");
-	scene.cam.Tilt(-30);
+	scene.camera.Tilt(-30);
 
-	scene.cam.Truck(1);
+	scene.camera.Truck(1);
 	scene.Render(PATH + "\\PPM\\Truck.ppm");
-	scene.cam.Truck(-1);
+	scene.camera.Truck(-1);
 	
 }
 
@@ -224,8 +225,7 @@ void animation()
 {
 	Geometry::Triangle triangle(Vector3(-1.75, -1.75, -3), Vector3(1.75, -1.75, -3), Vector3(0, 1.75, -3));
 	Image image(WIDTH, HEIGHT);
-
-	Camera cam(image, Frame(), FOV);
+	Camera cam(WIDTH, HEIGHT, Frame(), FOV);
 
 	std::vector<Geometry::Triangle>geometry{ triangle };
 	Scene scene(cam, geometry);
@@ -235,43 +235,57 @@ void animation()
 	{
 		scene.Render(PATH + "\\Anim\\Frame" + std::to_string(frameCount) + ".ppm");
 		std::cout << "Frame " << frameCount << " rendered" << std::endl;
-		scene.cam.Dolly(0.333);
+		scene.camera.Dolly(0.333);
 		frameCount++;
 	}
 
 	for (int i = 0; i < 15; i++) {
 		scene.Render(PATH + "\\Anim\\Frame" + std::to_string(frameCount) + ".ppm");
 		std::cout << "Frame " << frameCount << " rendered" << std::endl;
-		scene.cam.Pan(-1);
+		scene.camera.Pan(-1);
 		frameCount++;
 	}
 
 	for (int i = 0; i < 30; i++) {
 		scene.Render(PATH + "\\Anim\\Frame" + std::to_string(frameCount) + ".ppm");
 		std::cout << "Frame " << frameCount << " rendered" << std::endl;
-		scene.cam.Pan(1);
+		scene.camera.Pan(1);
 		frameCount++;
 	}
 
 	for (int i = 0; i < 15; i++) {
 		scene.Render(PATH + "\\Anim\\Frame" + std::to_string(frameCount) + ".ppm");
 		std::cout << "Frame " << frameCount << " rendered" << std::endl;
-		scene.cam.Pan(-1);
+		scene.camera.Pan(-1);
 		frameCount++;
 	}
 
 	for (int i = 0; i < 10; i++) {
 		scene.Render(PATH + "\\Anim\\Frame" + std::to_string(frameCount) + ".ppm");
 		std::cout << "Frame " << frameCount << " rendered" << std::endl;
-		scene.cam.Roll(-1);
+		scene.camera.Roll(-1);
 		frameCount++;
 	}
 
 }
 
+void testJson()
+{
+	Scene::FromFile(SCENE_PATH + "scene0.crtscene").Render(PATH + "\\PPM\\scene0.ppm");
+	std::cout << "Scene0 rendered" << std::endl;
+	Scene::FromFile(SCENE_PATH + "scene1.crtscene").Render(PATH + "\\PPM\\scene1.ppm");
+	std::cout << "Scene1 rendered" << std::endl;
+	Scene::FromFile(SCENE_PATH + "scene2.crtscene").Render(PATH + "\\PPM\\scene2.ppm");
+	std::cout << "Scene2 rendered" << std::endl;
+	Scene::FromFile(SCENE_PATH + "scene3.crtscene").Render(PATH + "\\PPM\\scene3.ppm");
+	std::cout << "Scene3 rendered" << std::endl;
+	Scene::FromFile(SCENE_PATH + "scene4.crtscene").Render(PATH + "\\PPM\\scene4.ppm");
+	std::cout << "Scene4 rendered" << std::endl;
+}
+
 int main()
 {
-	//Task2
+	/*//Task2
 	RandomImage();
 	CircleImage();
 
@@ -289,6 +303,9 @@ int main()
 	//Task6
 	renderShapeMovedCamera();
 	camMovements();
-	animation();
+	animation();*/
+
+	//Task7
+	testJson();
 }
 
