@@ -124,7 +124,7 @@ struct Scene {
 		std::vector<Material> materialList;
 		std::vector<float> albedo;
 		MaterialType type;
-		static std::unordered_map<std::string, MaterialType> const map{ {"diffuse",MaterialType::DIFFUSE} };
+		static std::unordered_map<std::string, MaterialType> const map{ {"diffuse",MaterialType::DIFFUSE},{"reflective",MaterialType::REFLECTIVE}};
 		for (int i = 0; i < materials.size(); i++)
 		{
 			albedo.clear();

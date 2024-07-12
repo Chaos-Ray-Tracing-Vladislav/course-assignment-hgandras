@@ -3,7 +3,8 @@
 
 enum MaterialType
 {
-	DIFFUSE
+	DIFFUSE,
+	REFLECTIVE
 };
 
 struct Material {

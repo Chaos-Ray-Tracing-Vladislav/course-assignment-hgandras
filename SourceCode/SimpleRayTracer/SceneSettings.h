@@ -27,6 +27,7 @@ struct Settings {
 
 	//Other
 	const float EPSILON = 1e-5;
+	const int MAX_RECURSION = 2;
 };
 
 
