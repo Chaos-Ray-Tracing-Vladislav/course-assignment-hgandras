@@ -67,6 +67,7 @@ struct Scene {
 		std::vector<Geometry::Object> objects;
 		std::vector<int> triangles;
 		std::vector<float> vertices;
+
 		for (int i = 0; i < geometry.size(); i++)
 		{
 			triangles.clear();
@@ -76,8 +77,10 @@ struct Scene {
 			triangles.insert(triangles.begin(), geometry[i]["triangles"].begin(), geometry[i]["triangles"].end());
 			
 			std::vector<Geometry::Triangle> faces;
+			std::vector<Vector3> vertex_normals(vertices.size()/3,Vector3::zero());
 
-			for (int triangleID = 0; triangleID < triangles.size(); triangleID += 3)
+			//Calculate 
+			for(int triangleID = 0; triangleID < triangles.size(); triangleID += 3)
 			{
 				int ind0 = triangles[triangleID] * 3;
 				Vector3 v0(vertices[ind0], vertices[ind0 + 1], vertices[ind0 + 2]);
@@ -88,11 +91,18 @@ struct Scene {
 				int ind2 = triangles[triangleID + 2] * 3;
 				Vector3 v2(vertices[ind2], vertices[ind2 + 1], vertices[ind2 + 2]);
 
-				Geometry::Triangle tr(v0, v1, v2);
+				Geometry::Triangle tr(v0, v1, v2,ind0/3,ind1/3,ind2/3);
 				faces.push_back(tr);
+
+				vertex_normals[ind0/3] = vertex_normals[ind0/3] + tr.normal;
+				vertex_normals[ind1/3] = vertex_normals[ind1/3] + tr.normal;
+				vertex_normals[ind2/3] = vertex_normals[ind2/3] + tr.normal;
 			}
+
+			for (int i = 0; i < vertex_normals.size(); i++)
+				vertex_normals[i] = vertex_normals[i].norm();
 			
-			objects.push_back(Geometry::Object{ faces,geometry[i]["material_index"]});
+			objects.push_back(Geometry::Object{ faces,vertex_normals,geometry[i]["material_index"]});
 		}
 
 		//Lights
