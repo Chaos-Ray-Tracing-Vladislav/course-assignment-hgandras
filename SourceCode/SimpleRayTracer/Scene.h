@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <string>
 
+//TODO: Make scene settings be the same as the json sepcification, and move everything else to the scene like objects, and 
+//complete materials. This will hopefully make the code a bit more readable.
 struct Scene {
 	Settings sceneSettings;
 	
