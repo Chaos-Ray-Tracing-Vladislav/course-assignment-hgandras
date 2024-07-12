@@ -89,6 +89,7 @@ inline Vector3 Cross(const Vector3& a,const Vector3& b) {
 	return Vector3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 }
 inline Vector3 Reflect(Vector3& incoming, Vector3& n) { return incoming - 2 * Dot(incoming, n) * n; }
+inline Vector3 Min(const Vector3& x,const Vector3& y) {return Vector3(fminf(x.x, y.x), fminf(x.y, y.y), fminf(x.z, y.z));}
 
 struct Vector4 {
 
