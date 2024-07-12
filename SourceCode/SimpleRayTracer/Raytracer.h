@@ -21,9 +21,9 @@ private:
 				{
 					minT = t;
 					intersected = true;
-					intersectedMaterial = object.material;
+					intersectedMaterial = scene.sceneSettings.materials[object.materialID];
 
-					closestIntersection.material = object.material;
+					closestIntersection.material = intersectedMaterial;
 					closestIntersection.normal = triangle.normal;
 					closestIntersection.t = minT;
 				}
@@ -72,7 +72,6 @@ public:
 				Vector3 finalColor = 255*Min(Vector3(1.f,1.f,1.f),  intersection.value().material.albedo * reflectedIntensity);
 				scene.image.setPixel(x, y, Color((int)finalColor.x,(int)finalColor.y,(int)finalColor.z));
 			}
-			
 		}
 		scene.image.writePPM(imgName);
 	}

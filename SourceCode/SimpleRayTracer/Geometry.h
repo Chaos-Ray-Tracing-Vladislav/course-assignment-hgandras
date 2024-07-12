@@ -64,6 +64,6 @@ namespace Geometry
 
 	struct Object {
 		std::vector<Geometry::Triangle> triangles;
-		Material material;
+		int materialID;
 	};
 }

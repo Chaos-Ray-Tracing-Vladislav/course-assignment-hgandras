@@ -92,8 +92,7 @@ struct Scene {
 				faces.push_back(tr);
 			}
 			
-			Material mat{ Vector3(0.0005,0,0) };
-			objects.push_back(Geometry::Object{ faces,mat });
+			objects.push_back(Geometry::Object{ faces,geometry[i]["material_index"]});
 		}
 
 		//Lights
@@ -108,6 +107,21 @@ struct Scene {
 
 			Light obj{ light["intensity"],Vector3(posVec[0],posVec[1],posVec[2])};
 			lightList.push_back(obj);
+		}
+
+		//Materials
+		nlohmann::json materials = data["materials"];
+		std::vector<Material> materialList;
+		std::vector<float> albedo;
+		MaterialType type;
+		static std::unordered_map<std::string, MaterialType> const map{ {"diffuse",MaterialType::DIFFUSE} };
+		for (int i = 0; i < materials.size(); i++)
+		{
+			albedo.clear();
+			albedo.insert(albedo.begin(),materials[i]["albedo"].begin(),materials[i]["albedo"].end());
+			type = map.find(materials[i]["type"])->second;
+			Material material{ type,Vector3(albedo[0],albedo[1],albedo[2]),materials[i]["smooth_shading"]};
+			materialList.push_back(material);
 		}
 
 		//Final struct
@@ -125,7 +139,9 @@ struct Scene {
 
 			//Ambient coefficient and ambient light
 			0.1,  
-			Vector3(1,1,1)
+			Vector3(1,1,1),
+
+			materialList
 		};
 
 		return Scene(sceneSettings);
