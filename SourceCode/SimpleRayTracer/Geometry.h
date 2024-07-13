@@ -77,5 +77,7 @@ namespace Geometry
 		Material* material;
 		float t;
 		int objectID;
+		Vector3 normal; //This is here, because it is defferent from the triangle's normal when 
+						//smooth shading is used.
 	};
 }
