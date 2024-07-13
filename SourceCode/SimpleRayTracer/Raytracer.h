@@ -4,7 +4,7 @@
 class RayTracer
 {
 private:
-	std::optional<Geometry::Intersection> IntersectRay(Ray ray, std::vector<Geometry::Object> objects)
+	std::optional<Geometry::Intersection> IntersectRay(Ray ray)
 	{
 		Geometry::Intersection closestIntersection;
 		float minT;
@@ -26,6 +26,8 @@ private:
 					closestIntersection.triangle = &triangle;
 					closestIntersection.t = minT;
 					closestIntersection.objectID = objID;
+					Vector3 intersectionPoint = minT * ray.dir + ray.origin;
+					closestIntersection.normal = closestIntersection.material->smooth_shading ? barycentricNorm(barycentricCoordinates(intersectionPoint, closestIntersection.triangle), closestIntersection) : closestIntersection.triangle->normal;
 				}
 			}
 			objID++;
@@ -35,6 +37,45 @@ private:
 			return closestIntersection;
 		}
 		return {};
+	}
+
+	Vector3 barycentricCoordinates(Vector3 intersectionPoint, Geometry::Triangle* triangle)
+	{
+		float u = Geometry::Triangle::Area(triangle->v1, intersectionPoint, triangle->v3) / triangle->area;
+		float v = Geometry::Triangle::Area(triangle->v2, intersectionPoint, triangle->v1) / triangle->area;
+
+		return Vector3(u, v, 1 - u - v);
+	}
+
+	Vector3 barycentricNorm(Vector3 baryCoords,Geometry::Intersection isec)
+	{
+		Vector3 n1 = baryCoords.z * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v1];
+		Vector3 n2 = baryCoords.x * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v2];
+		Vector3 n3 = baryCoords.y * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v3];
+
+		return n1 + n2 + n3;
+	}
+
+	Vector3 traceRay(Ray out,Geometry::Intersection isec)
+	{
+		Vector3 Lin;
+		Vector3 finalColor = Vector3::zero();
+		Vector3 intersectionPoint = isec.t * out.dir + out.origin;
+		float sphereArea;
+		for (Light light : scene.sceneSettings.lights)
+		{
+			Lin = (light.position - intersectionPoint);
+			sphereArea = 4 * Lin.length() * Lin.length() * PI;
+			Lin = Lin.norm();
+
+			Ray shadowRay(intersectionPoint + scene.sceneSettings.EPSILON * Lin, Lin);
+			auto shadow = IntersectRay(shadowRay);
+			if (!shadow)
+			{
+				finalColor = finalColor + isec.material->albedo * light.intensity / sphereArea * std::max(0.0f, Dot(Lin, isec.normal));
+			}
+		}
+		return finalColor;
 	}
 
 public:
@@ -49,7 +90,7 @@ public:
 			int y = i / scene.image.w;
 			Ray ray = scene.camera.CastRay(x, y);
 
-			auto intersection = IntersectRay(ray, scene.sceneSettings.objects);
+			auto intersection = IntersectRay(ray);
 			
 			if(!intersection)
 			{
@@ -59,52 +100,33 @@ public:
 			{
 				Geometry::Intersection isec = intersection.value();
 				Vector3 finalColor = Vector3::zero();
-				Vector3 intersectionPoint = isec.t * ray.dir + ray.origin;
-				Vector3 Lin;
-
-				//TODO: If shading is not smooth, dont calculate the barycentric coordinates. Also refactor the 
-				//whole function, looks ugly:(
-
-				float u = Geometry::Triangle::Area(isec.triangle->v1, intersectionPoint, isec.triangle->v3)/isec.triangle->area;
-				float v = Geometry::Triangle::Area(isec.triangle->v2, intersectionPoint, isec.triangle->v1)/isec.triangle->area;
-
-				Vector3 baryCoords(u,v, 1-u-v);
 
 				//If there are no lights, color by barycentric coordinates
 				if(scene.sceneSettings.lights.size() == 0)
 				{
-					finalColor = 255 * baryCoords;
+					finalColor = 255 * barycentricCoordinates(isec.t * ray.dir + ray.origin,isec.triangle);
 				}
 				else {
-					for (Light light : scene.sceneSettings.lights)
+					if (isec.material->type == MaterialType::DIFFUSE)
 					{
-						Lin = (light.position - intersectionPoint);
-						float sphereArea = 4 * Lin.length() * Lin.length() * PI;
-						Lin = Lin.norm();
-
-						Vector3 n1 = baryCoords.z * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v1];
-						Vector3 n2 = baryCoords.x * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v2];
-						Vector3 n3 = baryCoords.y * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v3];
-						Vector3 norm = isec.material->smooth_shading ? n1 + n2 + n3 : isec.triangle->normal;
-
-						Ray shadowRay(intersectionPoint + scene.sceneSettings.EPSILON * Lin, Lin);
-						auto shadow = IntersectRay(shadowRay, scene.sceneSettings.objects);
-						if (!shadow)
+						finalColor = traceRay(ray,isec);
+					}
+					else if (isec.material->type == MaterialType::REFLECTIVE)
+					{
+						int bounces = 0;
+						while(true)
 						{
-							finalColor = finalColor + isec.material->albedo * light.intensity / sphereArea * std::max(0.0f, Dot(Lin, norm));
-							if (isec.material->type == MaterialType::REFLECTIVE)
-							{
-								for (int bounce = 0; bounce < scene.sceneSettings.MAX_BOUNCE; bounce++)
-								{
-									Vector3 Rin = Reflect(ray.dir, norm);
-									Ray reflected = Ray(intersectionPoint + scene.sceneSettings.EPSILON * Rin, Rin);
-									auto bounceIntersection = IntersectRay(reflected,scene.sceneSettings.objects);
-									if (!bounceIntersection)
-										break;
-									finalColor = finalColor + bounceIntersection.value().material->albedo * light.intensity / sphereArea * std::max(0.0f, Dot(Lin, norm));
-
-								}
-							}
+							bounces++;
+							if (bounces > scene.sceneSettings.MAX_BOUNCE) //Early stop
+								break;
+							finalColor = finalColor + traceRay(ray,isec);
+							//Calculate new ray and intersection
+							Vector3 reflectedDir = Reflect(ray.dir, isec.normal);
+							ray = Ray(isec.t * ray.dir + ray.origin + scene.sceneSettings.EPSILON * reflectedDir, reflectedDir);
+							auto reflectedIsec = IntersectRay(ray);
+							if (!reflectedIsec)
+								break;
+							isec = reflectedIsec.value();
 						}
 					}
 					finalColor = 255 * Min(Vector3(1.f, 1.f, 1.f),  finalColor);
