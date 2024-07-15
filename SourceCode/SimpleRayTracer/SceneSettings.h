@@ -27,7 +27,7 @@ struct Settings {
 
 	//Other
 	const float EPSILON = 1e-4;
-	const int MAX_BOUNCE = 2;
+	const int MAX_BOUNCE = 5;
 };
 
 
