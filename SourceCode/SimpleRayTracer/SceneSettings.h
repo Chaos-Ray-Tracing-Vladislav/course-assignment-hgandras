@@ -6,7 +6,7 @@
 
 struct Settings {
 	//General
-	Color bgCol;
+	Vector3 bgCol;
 	int width;
 	int height;
 
