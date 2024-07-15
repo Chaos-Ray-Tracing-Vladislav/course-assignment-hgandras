@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <string>
 
+//TODO: Make scene settings be the same as the json sepcification, and move everything else to the scene like objects, and 
+//complete materials. This will hopefully make the code a bit more readable.
 struct Scene {
 	Settings sceneSettings;
 	
@@ -67,6 +69,7 @@ struct Scene {
 		std::vector<Geometry::Object> objects;
 		std::vector<int> triangles;
 		std::vector<float> vertices;
+
 		for (int i = 0; i < geometry.size(); i++)
 		{
 			triangles.clear();
@@ -76,8 +79,10 @@ struct Scene {
 			triangles.insert(triangles.begin(), geometry[i]["triangles"].begin(), geometry[i]["triangles"].end());
 			
 			std::vector<Geometry::Triangle> faces;
+			std::vector<Vector3> vertex_normals(vertices.size()/3,Vector3::zero());
 
-			for (int triangleID = 0; triangleID < triangles.size(); triangleID += 3)
+			//Calculate 
+			for(int triangleID = 0; triangleID < triangles.size(); triangleID += 3)
 			{
 				int ind0 = triangles[triangleID] * 3;
 				Vector3 v0(vertices[ind0], vertices[ind0 + 1], vertices[ind0 + 2]);
@@ -88,12 +93,18 @@ struct Scene {
 				int ind2 = triangles[triangleID + 2] * 3;
 				Vector3 v2(vertices[ind2], vertices[ind2 + 1], vertices[ind2 + 2]);
 
-				Geometry::Triangle tr(v0, v1, v2);
+				Geometry::Triangle tr(v0, v1, v2,ind0/3,ind1/3,ind2/3);
 				faces.push_back(tr);
+
+				vertex_normals[ind0/3] = vertex_normals[ind0/3] + tr.normal;
+				vertex_normals[ind1/3] = vertex_normals[ind1/3] + tr.normal;
+				vertex_normals[ind2/3] = vertex_normals[ind2/3] + tr.normal;
 			}
+
+			for (int i = 0; i < vertex_normals.size(); i++)
+				vertex_normals[i] = vertex_normals[i].norm();
 			
-			Material mat{ Vector3(0.0005,0,0) };
-			objects.push_back(Geometry::Object{ faces,mat });
+			objects.push_back(Geometry::Object{ faces,vertex_normals,geometry[i]["material_index"]});
 		}
 
 		//Lights
@@ -108,6 +119,21 @@ struct Scene {
 
 			Light obj{ light["intensity"],Vector3(posVec[0],posVec[1],posVec[2])};
 			lightList.push_back(obj);
+		}
+
+		//Materials
+		nlohmann::json materials = data["materials"];
+		std::vector<Material> materialList;
+		std::vector<float> albedo;
+		MaterialType type;
+		static std::unordered_map<std::string, MaterialType> const map{ {"diffuse",MaterialType::DIFFUSE},{"reflective",MaterialType::REFLECTIVE}};
+		for (int i = 0; i < materials.size(); i++)
+		{
+			albedo.clear();
+			albedo.insert(albedo.begin(),materials[i]["albedo"].begin(),materials[i]["albedo"].end());
+			type = map.find(materials[i]["type"])->second;
+			Material material{ type,Vector3(albedo[0],albedo[1],albedo[2]),materials[i]["smooth_shading"]};
+			materialList.push_back(material);
 		}
 
 		//Final struct
@@ -125,7 +151,9 @@ struct Scene {
 
 			//Ambient coefficient and ambient light
 			0.1,  
-			Vector3(1,1,1)
+			Vector3(1,1,1),
+
+			materialList
 		};
 
 		return Scene(sceneSettings);

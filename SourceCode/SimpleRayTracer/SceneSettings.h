@@ -5,20 +5,29 @@
 #include "Light.h"
 
 struct Settings {
+	//General
 	Color bgCol;
 	int width;
 	int height;
 
+	//Camera
 	std::vector<float> matrix;
 	std::vector<float> position;
 
+	//Objects
 	std::vector<Geometry::Object> objects;
 
+	//Lights
 	std::vector<Light> lights;
 	float k_ambient;
 	Vector3 ambientColor;
 
-	const float EPSILON = 1e-5;
+	//Materials
+	std::vector<Material> materials;
+
+	//Other
+	const float EPSILON = 1e-4;
+	const int MAX_BOUNCE = 2;
 };
 
 

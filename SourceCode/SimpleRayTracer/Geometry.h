@@ -7,26 +7,20 @@
 
 namespace Geometry
 {
-	struct Intersection {
-		Vector3 normal;
-		Material material;
-		float t;
-	};
-
 	struct Triangle
 	{
 	
 		const Vector3 v1, v2, v3; //Positions of the vertices
+		const int id_v1, id_v2, id_v3; //Vertex indices
 		float area;
 		Vector3 normal;
 		
-		Triangle(Vector3 v1,Vector3 v2,Vector3 v3) : v1(v1),v2(v2),v3(v3)
+		Triangle() : id_v1(-1), id_v2(-1), id_v3(-1)
 		{
-			area = Cross(v2 - v1, v3 - v1).length() / 2;
-			normal = Cross(v2 - v1, v3 - v1).norm();
+
 		}
 
-		Triangle(Vector3 v1, Vector3 v2, Vector3 v3,Material color) : v1(v1), v2(v2), v3(v3)
+		Triangle(Vector3 v1,Vector3 v2,Vector3 v3,int id1,int id2,int id3) : v1(v1),v2(v2),v3(v3), id_v1(id1),id_v2(id2),id_v3(id3)
 		{
 			area = Cross(v2 - v1, v3 - v1).length() / 2;
 			normal = Cross(v2 - v1, v3 - v1).norm();
@@ -60,10 +54,30 @@ namespace Geometry
 				Dot(normal, Cross(edge2, C2)) > 0) return t;
 			return -1;
 		}
+
+		static float Area(const Vector3 v1, const Vector3 v2, const Vector3 v3)
+		{
+			return  Cross(v2 - v1, v3 - v1).length() / 2;
+		}
+
+		static Vector3 Normal(const Vector3 v1, const Vector3 v2, const Vector3 v3)
+		{
+			return Cross(v2 - v1, v3 - v1).norm();
+		}
 	};
 
 	struct Object {
 		std::vector<Geometry::Triangle> triangles;
-		Material material;
+		std::vector<Vector3> vertex_normals;
+		int materialID;
+	};
+
+	struct Intersection {
+		Triangle* triangle;
+		Material* material;
+		float t;
+		int objectID;
+		Vector3 normal; //This is here, because it is defferent from the triangle's normal when 
+						//smooth shading is used.
 	};
 }
