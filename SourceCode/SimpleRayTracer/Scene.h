@@ -126,19 +126,27 @@ struct Scene {
 		std::vector<Material> materialList;
 		std::vector<float> albedo;
 		MaterialType type;
-		static std::unordered_map<std::string, MaterialType> const map{ {"diffuse",MaterialType::DIFFUSE},{"reflective",MaterialType::REFLECTIVE}};
+		static std::unordered_map<std::string, MaterialType> const map{ {"diffuse",MaterialType::DIFFUSE},{"reflective",MaterialType::REFLECTIVE},{"refractive",MaterialType::REFRACTIVE}};
 		for (int i = 0; i < materials.size(); i++)
 		{
+			Material material;
 			albedo.clear();
-			albedo.insert(albedo.begin(),materials[i]["albedo"].begin(),materials[i]["albedo"].end());
 			type = map.find(materials[i]["type"])->second;
-			Material material{ type,Vector3(albedo[0],albedo[1],albedo[2]),materials[i]["smooth_shading"]};
+			if (type == MaterialType::DIFFUSE || type == MaterialType::REFLECTIVE)
+			{
+				albedo.insert(albedo.begin(), materials[i]["albedo"].begin(), materials[i]["albedo"].end());
+				material = { type,Vector3(albedo[0],albedo[1],albedo[2]),materials[i]["smooth_shading"],-1};
+			}
+			else if (type == MaterialType::REFRACTIVE)
+			{
+				material = { type, Vector3(-1,-1,-1), materials[i]["smooth_shading"],materials[i]["ior"] };
+			}
 			materialList.push_back(material);
 		}
 
 		//Final struct
 		Settings sceneSettings{
-			Color((int)(bgCol[0] * 255),(int)(bgCol[1] * 255),(int)(bgCol[2] * 255)),
+			Vector3(bgCol[0],bgCol[1],bgCol[2]),
 			settings["image_settings"]["width"],
 			settings["image_settings"]["height"],
 

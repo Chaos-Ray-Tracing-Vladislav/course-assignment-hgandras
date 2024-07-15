@@ -10,25 +10,10 @@ enum MaterialType
 
 struct Material {
 	MaterialType type;
-	bool smooth_shading;
-};
-
-struct Diffuse : Material
-{
 	Vector3 albedo;
-};
-
-struct Refractive : Material
-{
+	bool smooth_shading;
 	float ior;
 };
 
-struct Reflective {
-	Vector3 albedo;
-};
 
-struct Texture : Material
-{
-	int textureID;
-};
 
