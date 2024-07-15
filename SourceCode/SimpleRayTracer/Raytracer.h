@@ -39,7 +39,7 @@ private:
 		return {};
 	}
 
-	Vector3 barycentricCoordinates(Vector3 intersectionPoint, Geometry::Triangle* triangle)
+	Vector3 barycentricCoordinates(const Vector3 &intersectionPoint, Geometry::Triangle* triangle)
 	{
 		float u = Geometry::Triangle::Area(triangle->v1, intersectionPoint, triangle->v3) / triangle->area;
 		float v = Geometry::Triangle::Area(triangle->v2, intersectionPoint, triangle->v1) / triangle->area;
@@ -47,7 +47,7 @@ private:
 		return Vector3(u, v, 1 - u - v);
 	}
 
-	Vector3 barycentricNorm(Vector3 baryCoords,Geometry::Intersection isec)
+	Vector3 barycentricNorm(const Vector3 &baryCoords,Geometry::Intersection &isec)
 	{
 		Vector3 n1 = baryCoords.z * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v1];
 		Vector3 n2 = baryCoords.x * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v2];
@@ -61,22 +61,24 @@ private:
 		auto intersection = IntersectRay(out);
 
 		if (!intersection)
-		{
 			return scene.sceneSettings.bgCol;
-		}
 
 		Geometry::Intersection isec = intersection.value();
-		Vector3 Lin; //Incoming light direction
+
+		if (isec.material->type == MaterialType::CONSTANT)
+			return isec.material->albedo;
+
 		Vector3 intersectionPoint = isec.t * out.dir + out.origin;
 		if (isec.material->type == MaterialType::DIFFUSE) {
+			Vector3 Lin; //Incoming light direction
 			for (Light light : scene.sceneSettings.lights)
 			{
 				Lin = (light.position - intersectionPoint);
 				float sphereArea = 4 * Lin.length() * Lin.length() * PI;
-				Lin = Lin.norm();
-				Ray shadowRay(intersectionPoint + scene.sceneSettings.EPSILON * Lin, Lin);
+				Vector3 LinNormed = Lin.norm();
+				Ray shadowRay(intersectionPoint + scene.sceneSettings.EPSILON * LinNormed, LinNormed);
 				auto shadow = IntersectRay(shadowRay);
-				if (!shadow)
+				if (!shadow || (LinNormed*shadow.value().t).length() > Lin.length() || shadow.value().material->type == MaterialType::REFRACTIVE)
 				{
 					finalColor = finalColor + isec.material->albedo * light.intensity / sphereArea * std::max(0.0f, Dot(Lin, isec.normal));
 				}
@@ -93,6 +95,51 @@ private:
 			Vector3 reflectedDir = Reflect(out.dir, isec.normal);
 			Ray Rin = Ray(intersectionPoint + scene.sceneSettings.EPSILON * reflectedDir, reflectedDir);
 			finalColor = finalColor + isec.material->albedo * traceRay(Rin, finalColor, bounces);
+		}
+
+		else if (isec.material->type == MaterialType::REFRACTIVE)
+		{
+			if (bounces > scene.sceneSettings.MAX_BOUNCE)
+				return finalColor;
+			float n1 = 1;
+			float n2 = isec.material->ior;
+			Vector3 normal = isec.normal;
+			bounces++;
+			float intersectionAngle = Dot(out.dir, isec.normal);
+			if (intersectionAngle > 0) {
+				std::swap(n1, n2);
+				normal = -normal;
+			}
+
+			float cosT1 = - Dot(out.dir, normal);
+			float critAngle = asinf(n2 / n1);
+			if (acosf(cosT1)<critAngle || n2>n1)
+			{
+				//Refraction ray
+				float sinT2 = n1 * sqrtf(1 - cosT1 * cosT1) / n2;
+				float cosT2 = sqrtf(1-sinT2*sinT2);
+				Vector3 refractDir = n1 / n2 * out.dir + (n1 / n2 * cosT1 - cosT2) * normal;
+				Ray refractedRay(intersectionPoint + refractDir*scene.sceneSettings.EPSILON,refractDir);
+				Vector3 refractionColor = traceRay(refractedRay, finalColor, bounces);
+
+				//Reflection ray
+				Vector3 reflectedDir = Reflect(out.dir, isec.normal);
+				Ray reflectedRay = Ray(intersectionPoint + scene.sceneSettings.EPSILON * reflectedDir, reflectedDir);
+				Vector3 reflectionColor = traceRay(reflectedRay, finalColor, bounces);
+
+				float kr = 0.5f * powf((1.0 - cosT1), 5);
+				finalColor = kr * reflectionColor + (1 - kr) * refractionColor;
+			}
+			else
+			{
+				//reflect ray
+				if (bounces > scene.sceneSettings.MAX_BOUNCE)
+					return finalColor;
+				bounces++;
+				Vector3 reflectedDir = Reflect(out.dir, isec.normal);
+				Ray Rin = Ray(intersectionPoint + scene.sceneSettings.EPSILON * reflectedDir, reflectedDir);
+				finalColor = finalColor + isec.material->albedo * traceRay(Rin, finalColor, bounces);
+			}
 		}
 
 		return finalColor;

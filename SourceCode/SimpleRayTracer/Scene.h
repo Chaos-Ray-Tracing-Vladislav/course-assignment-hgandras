@@ -126,13 +126,13 @@ struct Scene {
 		std::vector<Material> materialList;
 		std::vector<float> albedo;
 		MaterialType type;
-		static std::unordered_map<std::string, MaterialType> const map{ {"diffuse",MaterialType::DIFFUSE},{"reflective",MaterialType::REFLECTIVE},{"refractive",MaterialType::REFRACTIVE}};
+		static std::unordered_map<std::string, MaterialType> const map{ {"diffuse",MaterialType::DIFFUSE},{"reflective",MaterialType::REFLECTIVE},{"refractive",MaterialType::REFRACTIVE},{"constant",MaterialType::CONSTANT}};
 		for (int i = 0; i < materials.size(); i++)
 		{
 			Material material;
 			albedo.clear();
 			type = map.find(materials[i]["type"])->second;
-			if (type == MaterialType::DIFFUSE || type == MaterialType::REFLECTIVE)
+			if (type == MaterialType::DIFFUSE || type == MaterialType::REFLECTIVE || type == MaterialType::CONSTANT )
 			{
 				albedo.insert(albedo.begin(), materials[i]["albedo"].begin(), materials[i]["albedo"].end());
 				material = { type,Vector3(albedo[0],albedo[1],albedo[2]),materials[i]["smooth_shading"],-1};
