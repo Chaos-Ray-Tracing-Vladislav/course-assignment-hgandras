@@ -13,7 +13,7 @@
 const std::string PATH = "C:\\Gazsi\\Prog\\ChaosCamp\\RayTracing\\course-assignment-hgandras\\Images";
 const std::string SCENE_PATH = "C:\\Gazsi\\Prog\\ChaosCamp\\RayTracing\\course-assignment-hgandras\\SourceCode\\Scenes\\";
 
-void Task8()
+void Task11()
 {
 
 	Scene scene0 = Scene::FromFile(SCENE_PATH + "\\Task9\\scene0.crtscene");
@@ -49,6 +49,6 @@ void Task8()
 
 int main()
 {
-	Task8();
+	Task11();
 }
 
