@@ -5,7 +5,8 @@ enum MaterialType
 {
 	DIFFUSE,
 	REFLECTIVE,
-	REFRACTIVE
+	REFRACTIVE,
+	CONSTANT
 };
 
 struct Material {
