@@ -36,7 +36,7 @@ struct Vector2 {
 
 inline Vector2 operator*(float a, Vector2& vec) { return Vector2(a * vec.x, a * vec.y); }
 inline float Dot(const Vector2& a,const Vector2& b) { return a.x * b.x + a.y * b.y; }
-inline Vector2 Reflect(Vector2& incoming, Vector2& n) { return incoming - 2 * Dot(incoming, n) * n; }
+inline Vector2 Reflect(Vector2& incoming,Vector2& n) { return incoming - 2 * Dot(incoming, n) * n; }
 
 struct Vector3 {
 
@@ -88,7 +88,7 @@ inline float Dot(const Vector3& a,const Vector3& b) { return a.x * b.x + a.y * b
 inline Vector3 Cross(const Vector3& a,const Vector3& b) {
 	return Vector3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 }
-inline Vector3 Reflect(Vector3& incoming, Vector3& n) { return incoming - 2 * Dot(incoming, n) * n; }
+inline Vector3 Reflect(const Vector3& incoming,const Vector3& n) { return incoming - 2 * Dot(incoming, n) * n; }
 inline Vector3 Min(const Vector3& x,const Vector3& y) {return Vector3(fminf(x.x, y.x), fminf(x.y, y.y), fminf(x.z, y.z));}
 
 struct Vector4 {
