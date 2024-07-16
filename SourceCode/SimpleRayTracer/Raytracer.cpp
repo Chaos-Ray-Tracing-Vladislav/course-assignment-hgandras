@@ -2,7 +2,7 @@
 #include "Raytracer.h"
 
 
-std::optional<Geometry::Intersection> RayTracer::IntersectRay(Ray ray)
+std::optional<Geometry::Intersection> RayTracer::IntersectRay(Ray& ray)
 {
 	Geometry::Intersection closestIntersection;
 	float minT;
@@ -139,7 +139,7 @@ Vector3 RayTracer::traceRay(Ray& out, Vector3& finalColor, int bounces)
 	return finalColor;
 }
 
-RayTracer::RayTracer(Scene scene) : scene(scene) {}
+RayTracer::RayTracer(Scene& scene) : scene(scene) {}
 
 void RayTracer::Render(std::string imgName) {
 	for (int i = 0; i < scene.image.w * scene.image.h; i++)
