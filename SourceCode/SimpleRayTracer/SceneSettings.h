@@ -26,7 +26,7 @@ struct Settings {
 	std::vector<Material> materials;
 
 	//Other
-	const float EPSILON = 1e-4;
+	const float EPSILON = 1e-5;
 	const int MAX_BOUNCE = 5;
 };
 

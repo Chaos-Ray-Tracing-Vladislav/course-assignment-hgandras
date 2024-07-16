@@ -54,7 +54,7 @@ void Task11()
 	Scene scene8 = Scene::FromFile(SCENE_PATH + "\\Task11\\scene8.crtscene");
 	RayTracer renderer8(scene8);
 	renderer8.Render(PATH + "\\PPM\\scene8.ppm");
-	std::cout << "Scene8 rendered" << std::endl;
+	std::cout << "Scene8 rendered" << std::endl; 
 }
 
 int main()
