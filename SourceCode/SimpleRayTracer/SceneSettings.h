@@ -3,8 +3,10 @@
 #include "Color.h"
 #include "Geometry.h"
 #include "Light.h"
+#include "Texture.h"
 
 struct Settings {
+
 	//General
 	Vector3 bgCol;
 	int width;
@@ -24,6 +26,12 @@ struct Settings {
 
 	//Materials
 	std::vector<Material> materials;
+
+	//Textures
+	std::vector<ColorTexture> cTextures;
+	std::vector<EdgeTexture> edgeTextures;
+	std::vector<CheckerTexture> checkerTextures;
+	std::vector<BitmapTexture> bmapTextures;
 
 	//Other
 	const float EPSILON = 1e-5;
