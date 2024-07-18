@@ -25,8 +25,13 @@ std::optional<Geometry::Intersection> RayTracer::IntersectRay(Ray& ray)
 				closestIntersection.t = minT;
 				closestIntersection.objectID = objID;
 				Vector3 intersectionPoint = minT * ray.dir + ray.origin;
-				closestIntersection.normal = closestIntersection.material->smooth_shading ? barycentricNorm(barycentricCoordinates(intersectionPoint, closestIntersection.triangle), closestIntersection) : closestIntersection.triangle->normal;
-			}
+				Vector3 barycentricCoords = barycentricCoordinates(intersectionPoint, closestIntersection.triangle);
+				closestIntersection.normal = closestIntersection.material->smooth_shading ? barycentricNorm(barycentricCoords, closestIntersection) : closestIntersection.triangle->normal;
+				closestIntersection.barycentric = barycentricCoords;
+
+				//Only take 1st 2 coords of UV, since 3rd is always 0
+				closestIntersection.uv = barycentricCoords.x * triangle.uv2 + barycentricCoords.y * triangle.uv3 + barycentricCoords.z * triangle.uv1;
+ 			}
 		}
 		objID++;
 	}
@@ -47,9 +52,9 @@ Vector3 RayTracer::barycentricCoordinates(const Vector3& intersectionPoint, Geom
 
 Vector3 RayTracer::barycentricNorm(const Vector3& baryCoords, Geometry::Intersection& isec)
 {
-	Vector3 n1 = baryCoords.z * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v1];
-	Vector3 n2 = baryCoords.x * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v2];
-	Vector3 n3 = baryCoords.y * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->id_v3];
+	Vector3 n1 = baryCoords.z * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->vertexIDs.x];
+	Vector3 n2 = baryCoords.x * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->vertexIDs.y];
+	Vector3 n3 = baryCoords.y * scene.sceneSettings.objects[isec.objectID].vertex_normals[isec.triangle->vertexIDs.z];
 
 	return n1 + n2 + n3;
 }
@@ -77,7 +82,36 @@ Vector3 RayTracer::traceRay(Ray& out, Vector3& finalColor, int bounces)
 			auto shadow = IntersectRay(shadowRay);
 			if (!shadow || shadow.value().t > Lin.length() || shadow.value().material->type == MaterialType::REFRACTIVE)
 			{
-				finalColor = finalColor + isec.material->albedo * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
+				switch (isec.material->texturePtr->type)
+				{
+					case TextureType::ALBEDO:
+					{
+						ColorTexture* cTexture = dynamic_cast<ColorTexture*>(isec.material->texturePtr);
+						finalColor = finalColor + cTexture->Sample(intersection.value().uv,intersection.value().barycentric) * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
+					}
+					break;
+
+					case TextureType::EDGES:
+					{
+						EdgeTexture* eTexture = dynamic_cast<EdgeTexture*>(isec.material->texturePtr);
+						finalColor = finalColor + eTexture->Sample(intersection.value().uv, intersection.value().barycentric) * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
+					}
+					break;
+
+					case TextureType::CHECKER:
+					{
+						CheckerTexture* checkerTexture = dynamic_cast<CheckerTexture*>(isec.material->texturePtr);
+						finalColor = finalColor + checkerTexture->Sample(intersection.value().uv, intersection.value().barycentric) * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
+					}
+					break;
+
+					case TextureType::BITMAP:
+					{
+						BitmapTexture* bTexture = dynamic_cast<BitmapTexture*>(isec.material->texturePtr);
+						finalColor = finalColor + bTexture->Sample(intersection.value().uv, intersection.value().barycentric) * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
+					}
+					break;
+				}
 			}
 		}
 	}
