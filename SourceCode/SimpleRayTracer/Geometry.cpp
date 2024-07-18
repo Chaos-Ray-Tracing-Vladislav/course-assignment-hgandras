@@ -3,12 +3,9 @@
 
 namespace Geometry {
 
+	Triangle::Triangle() {}
 
-	Triangle::Triangle() : id_v1(-1), id_v2(-1), id_v3(-1) {
-
-	}
-
-	Triangle::Triangle(Vector3 v1, Vector3 v2, Vector3 v3, int id1, int id2, int id3) : v1(v1), v2(v2), v3(v3), id_v1(id1), id_v2(id2), id_v3(id3)
+	Triangle::Triangle(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 vertexIDs, Vector2 uv1,Vector2 uv2,Vector2 uv3) : v1(v1), v2(v2), v3(v3), vertexIDs(vertexIDs),uv1(uv1),uv2(uv2), uv3(uv3)
 	{
 		area = Cross(v2 - v1, v3 - v1).length() / 2;
 		normal = Cross(v2 - v1, v3 - v1).norm();
