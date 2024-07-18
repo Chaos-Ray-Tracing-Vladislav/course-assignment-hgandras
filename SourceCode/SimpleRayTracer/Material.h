@@ -1,5 +1,6 @@
 #pragma once
 #include "Color.h"
+#include "Texture.h"
 
 enum MaterialType
 {
@@ -10,10 +11,11 @@ enum MaterialType
 };
 
 struct Material {
-	MaterialType type;
-	Vector3 albedo;
-	bool smooth_shading;
-	float ior;
+	MaterialType type = MaterialType::DIFFUSE;
+	Vector3 albedo = Vector3::zero();
+	bool smooth_shading = true;
+	float ior = -1;
+	Texture* texturePtr = nullptr; 
 };
 
 
