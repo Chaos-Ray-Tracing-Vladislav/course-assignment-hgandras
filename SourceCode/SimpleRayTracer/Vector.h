@@ -71,6 +71,7 @@ float Dot(const Vector3& a, const Vector3& b);
 Vector3 Cross(const Vector3& a, const Vector3& b);
 Vector3 Reflect(const Vector3& incoming, const Vector3& n);
 Vector3 Min(const Vector3& x, const Vector3& y);
+Vector3 Max(const Vector3& x, const Vector3& y);
 
 struct Vector4 {
 

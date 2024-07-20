@@ -70,6 +70,7 @@ Vector3 Cross(const Vector3& a, const Vector3& b) {
 }
 Vector3 Reflect(const Vector3& incoming, const Vector3& n) { return incoming - 2 * Dot(incoming, n) * n; }
 Vector3 Min(const Vector3& x, const Vector3& y) { return Vector3(fminf(x.x, y.x), fminf(x.y, y.y), fminf(x.z, y.z)); }
+Vector3 Max(const Vector3& x, const Vector3& y) { return Vector3(fmaxf(x.x, y.x), fmaxf(x.y, y.y), fmaxf(x.z, y.z)); }
 
 //Vector4 implementations
 Vector4::Vector4() : x(0), y(0), z(0), w(0){}
