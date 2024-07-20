@@ -1,5 +1,5 @@
 #include "Geometry.h"
-
+#include <limits>
 
 namespace Geometry {
 
@@ -48,5 +48,26 @@ namespace Geometry {
 	Vector3 Triangle::Normal(const Vector3 v1, const Vector3 v2, const Vector3 v3)
 	{
 		return Cross(v2 - v1, v3 - v1).norm();
+	}
+
+
+	//From https://medium.com/@bromanz/another-view-on-the-classic-ray-aabb-intersection-algorithm-for-bvh-traversal-41125138b525
+	bool AABB::Intersect(Ray& ray)
+	{
+		float tmin = -std::numeric_limits<float>::max();
+		float tmax = std::numeric_limits<float>::max();
+
+		Vector3 invD(1 / ray.dir.x, 1 / ray.dir.y, 1 / ray.dir.z);
+
+		Vector3 t0s = (min - ray.origin) * invD;
+		Vector3 t1s = (max - ray.origin) * invD;
+
+		Vector3 tsmaller = Min(t0s, t1s);
+		Vector3 tbigger = Max(t0s, t1s);
+
+		tmin = std::max(tmin, std::max(tsmaller.x, std::max(tsmaller.y, tsmaller.z)));
+		tmax = std::min(tmax, std::min(tbigger.x, std::min(tbigger.y, tbigger.z)));
+
+		return tmin < tmax;
 	}
 }
