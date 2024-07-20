@@ -1,0 +1,4 @@
+Scene0 rendered in parallel buckets in 35 seconds
+Scene0 rendered AABB in 187 seconds
+Scene0 rendered in parallel regions in 88 seconds
+Scene0 rendered in sequential in 316 seconds

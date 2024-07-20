@@ -143,6 +143,8 @@
     <ClCompile Include="Raytracer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Threadpool.cpp" />
+    <ClCompile Include="Threadpool.h" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
