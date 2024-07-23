@@ -9,7 +9,6 @@ namespace Geometry
 {
 	struct Triangle
 	{
-	
 		const Vector3 v1, v2, v3; //Positions of the vertices
 		const Vector3 vertexIDs; //Vertex indices
 		Vector2 uv1,uv2,uv3;
@@ -57,5 +56,9 @@ namespace Geometry
 		Vector3 max;
 
 		bool Intersect(Ray&);
+		std::tuple<AABB, AABB> Split(unsigned int axis);
+		bool Intersect(Triangle&);
 	};
+
+	
 }
