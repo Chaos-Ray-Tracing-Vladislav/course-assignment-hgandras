@@ -1,30 +1,32 @@
 #pragma once
 #include "Scene.h"
+#include "AccelerationTree.h"
+#include "Geometry.h"
 #include <thread>
 
 class RayTracer
 {
 private:
-	std::optional<Geometry::Intersection> IntersectRay(Ray& ray);
+	std::optional<Geometry::Intersection> IntersectRay(Ray&);
 
-	Vector3 barycentricCoordinates(const Vector3& intersectionPoint, Geometry::Triangle* triangle);
-
-	Vector3 barycentricNorm(const Vector3& baryCoords, Geometry::Intersection& isec);
-
-	Vector3 traceRay(Ray& out, Vector3& finalColor, int bounces);
+	Vector3 traceRay(Ray&, Vector3&, int,bool);
 
 public:
 	Scene scene;
 
-	RayTracer(Scene& scene);
+	AccelerationTree ACTree;
 
-	void ParallelRegionsRender(std::string imgName);
+	RayTracer(Scene&);
 
-	void ParallelBucketsRender(std::string imgName);
+	void ParallelRegionsRender(std::string);
 
-	void AABBRender(std::string imgName);
+	void ParallelBucketsRender(std::string);
+
+	void AABBRender(std::string);
 
 	void RenderRegion( int, int, int, int);
 
-	void Render(std::string imgName);
+	void Render(std::string);
+
+	void ACTreeRender(std::string);
 };
