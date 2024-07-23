@@ -143,9 +143,8 @@ std::optional<Geometry::Intersection> AccelerationTree::intersectMap(ACTreenode&
 				//Only take 1st 2 coords of UV, since 3rd is always 0
 				closestIntersection.uv = barycentricCoords.x * triangle.uv2 + barycentricCoords.y * triangle.uv3 + barycentricCoords.z * triangle.uv1;
 			}
-			objID++;
 		}
-		
+		objID++;
 	}
 	if (intersected) {
 		return closestIntersection;
