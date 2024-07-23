@@ -62,15 +62,17 @@ Vector3 RayTracer::traceRay(Ray& out, Vector3& finalColor,int bounces,bool use_a
 			Lin = light.position - intersectionPoint;
 			float sphereArea = 4 * Lin.length() * Lin.length() * PI;
 			Ray shadowRay(intersectionPoint + scene.sceneSettings.EPSILON * isec.normal, Lin.norm());
-			auto shadow = use_ac_tree ? ACTree.Traverse(out) : IntersectRay(out);
-			if (isec.material->texturePtr!=nullptr && (!shadow || shadow.value().t > Lin.length() || shadow.value().material->type == MaterialType::REFRACTIVE))
+			auto shadow = use_ac_tree ? ACTree.Traverse(shadowRay) : IntersectRay(shadowRay);
+			if (!shadow || shadow.value().t > Lin.length() || shadow.value().material->type == MaterialType::REFRACTIVE)
 			{
-				switch (isec.material->texturePtr->type)
+				if (isec.material->texturePtr != nullptr)
 				{
+					switch (isec.material->texturePtr->type)
+					{
 					case TextureType::ALBEDO:
 					{
 						ColorTexture* cTexture = dynamic_cast<ColorTexture*>(isec.material->texturePtr);
-						finalColor = finalColor + cTexture->Sample(intersection.value().uv,intersection.value().barycentric) * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
+						finalColor = finalColor + cTexture->Sample(intersection.value().uv, intersection.value().barycentric) * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
 					}
 					break;
 
@@ -94,10 +96,14 @@ Vector3 RayTracer::traceRay(Ray& out, Vector3& finalColor,int bounces,bool use_a
 						finalColor = finalColor + bTexture->Sample(intersection.value().uv, intersection.value().barycentric) * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
 					}
 					break;
+					}
+				
 				}
+				else
+					finalColor = finalColor + isec.material->albedo * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
+				
 			}
-			else
-				finalColor = finalColor + isec.material->albedo * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
+			
 		}
 	}
 
@@ -177,7 +183,7 @@ void RayTracer::Render(std::string imgName) {
 	scene.image.writePPM(imgName);
 }
 
-void RayTracer::RenderRegion(int px_w, int px_h, int region_w, int region_h)
+void RayTracer::RenderRegion(int px_w, int px_h, int region_w, int region_h,bool use_ac_tree)
 {
 	for (int h = px_h; h < px_h+region_h; h++)
 	{
@@ -189,13 +195,13 @@ void RayTracer::RenderRegion(int px_w, int px_h, int region_w, int region_h)
 			Ray ray = scene.camera.CastRay(w, h);
 
 			Vector3 finalColor = Vector3::zero();
-			finalColor = 255 * Min(Vector3(1.f, 1.f, 1.f), traceRay(ray, finalColor, 0,false));
+			finalColor = 255 * Min(Vector3(1.f, 1.f, 1.f), traceRay(ray, finalColor, 0,use_ac_tree));
 			scene.image.setPixel(w, h, Color((int)finalColor.x, (int)finalColor.y, (int)finalColor.z));
 		}
 	}
 }
 
-void RayTracer::ParallelRegionsRender(std::string imgName)
+void RayTracer::ParallelRegionsRender(std::string imgName,bool use_ac_tree)
 {
 	scene.image.clear();
 	std::vector<std::jthread> threads;
@@ -210,14 +216,14 @@ void RayTracer::ParallelRegionsRender(std::string imgName)
 	{
 		for (int x = 0; x < w_threads; x++)
 		{
-			threads.push_back(std::jthread(&RayTracer::RenderRegion,this,x*region_w, y*region_h, region_w, region_h));
+			threads.push_back(std::jthread(&RayTracer::RenderRegion,this,x*region_w, y*region_h, region_w, region_h,use_ac_tree));
 		}
 	}
 	threads.clear();
 	scene.image.writePPM(imgName);
 }
 
-void RayTracer::ParallelBucketsRender(std::string imgName)
+void RayTracer::ParallelBucketsRender(std::string imgName,bool use_ac_tree)
 {
 	scene.image.clear();
 	ThreadPool thread_pool;
@@ -230,7 +236,7 @@ void RayTracer::ParallelBucketsRender(std::string imgName)
 	{
 		for (int x = 0; x < w_threads; x++)
 		{
-			std::function<void()> func = std::bind(&RayTracer::RenderRegion, this, x * scene.sceneSettings.bucket_size, y * scene.sceneSettings.bucket_size, scene.sceneSettings.bucket_size, scene.sceneSettings.bucket_size);
+			std::function<void()> func = std::bind(&RayTracer::RenderRegion, this, x * scene.sceneSettings.bucket_size, y * scene.sceneSettings.bucket_size, scene.sceneSettings.bucket_size, scene.sceneSettings.bucket_size,use_ac_tree);
 			thread_pool.AddTask(func);
 		}
 	}

@@ -18,13 +18,13 @@ public:
 
 	RayTracer(Scene&);
 
-	void ParallelRegionsRender(std::string);
+	void ParallelRegionsRender(std::string,bool);
 
-	void ParallelBucketsRender(std::string);
+	void ParallelBucketsRender(std::string,bool);
 
 	void AABBRender(std::string);
 
-	void RenderRegion( int, int, int, int);
+	void RenderRegion( int, int, int, int,bool);
 
 	void Render(std::string);
 
