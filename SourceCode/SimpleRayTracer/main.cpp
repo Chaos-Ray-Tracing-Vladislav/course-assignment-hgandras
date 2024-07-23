@@ -22,18 +22,25 @@ void Task14()
 	RayTracer renderer0(scene0);
 
 	const auto startBuckets{ std::chrono::high_resolution_clock::now() };
-	renderer0.ACTreeRender(PATH + "\\PPM\\sceneACTree1.ppm");
+	renderer0.ParallelBucketsRender(PATH + "\\PPM\\BucketActree1.ppm",true);
 	const auto endBuckets{ std::chrono::high_resolution_clock::now() };
 	long elapsed = std::chrono::duration_cast<std::chrono::seconds>(endBuckets - startBuckets).count();
 
-	std::cout << "Scene0 rendered in actree in " << elapsed << " seconds" << std::endl;
+	std::cout << "Scene1 rendered using ACTree and bucket rendering in " << elapsed << " seconds" << std::endl;
 
-	/*const auto startAABB{std::chrono::high_resolution_clock::now()};
-	renderer0.AABBRender(PATH + "\\PPM\\sceneAABB.ppm");
-	const auto endAABB{ std::chrono::high_resolution_clock::now() };
-	elapsed = std::chrono::duration_cast<std::chrono::seconds>(endAABB - startAABB).count();
+	const auto startactree{ std::chrono::high_resolution_clock::now() };
+	renderer0.ACTreeRender(PATH + "\\PPM\\ACTree1.ppm");
+	const auto endactree{ std::chrono::high_resolution_clock::now() };
+	elapsed = std::chrono::duration_cast<std::chrono::seconds>(endactree - startactree).count();
+
+	std::cout << "Scene1 rendered using ACTree in " << elapsed << " seconds" << std::endl;
+
+	const auto start{std::chrono::high_resolution_clock::now()};
+	renderer0.Render(PATH + "\\PPM\\Sequential.ppm");
+	const auto end{ std::chrono::high_resolution_clock::now() };
+	elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
 	 
-	std::cout << "Scene0 rendered AABB in " << elapsed << " seconds" << std::endl;*/
+	std::cout << "Scene1 rendered in sequential in " << elapsed << " seconds" << std::endl;
 }
 
 

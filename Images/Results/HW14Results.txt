@@ -1,0 +1,5 @@
+Scene1 rendered using ACTree and bucket rendering in 11 seconds
+Scene1 rendered using ACTree in 54 seconds
+Scene1 rendered in sequential in 341 seconds
+
+CPU: AMD Ryzen 5 2600X with 6 cores
