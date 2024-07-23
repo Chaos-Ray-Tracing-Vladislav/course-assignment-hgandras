@@ -48,9 +48,9 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 	std::vector<float> vertices;
 	std::vector<float> uvs;
 
-	float maxX = std::numeric_limits<float>::min();
-	float maxY = std::numeric_limits<float>::min();
-	float maxZ = std::numeric_limits<float>::min();
+	float maxX = -std::numeric_limits<float>::max();
+	float maxY = -std::numeric_limits<float>::max();
+	float maxZ = -std::numeric_limits<float>::max();
 
 	float minX = std::numeric_limits<float>::max();
 	float minY = std::numeric_limits<float>::max();
@@ -78,11 +78,9 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 			int ind1 = triangles[triangleID + 1] * 3;
 			Vector3 v1(vertices[ind1], vertices[ind1 + 1], vertices[ind1 + 2]);
 			
-
 			int ind2 = triangles[triangleID + 2] * 3;
 			Vector3 v2(vertices[ind2], vertices[ind2 + 1], vertices[ind2 + 2]);
 			
-
 			Vector2 uv1, uv2, uv3;
 
 			if (uvs.size() == 0)
