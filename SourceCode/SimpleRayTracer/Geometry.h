@@ -9,7 +9,7 @@ namespace Geometry
 {
 	struct Triangle
 	{
-		const Vector3 v1, v2, v3; //Positions of the vertices
+		Vector3 v1, v2, v3; //Positions of the vertices
 		const Vector3 vertexIDs; //Vertex indices
 		Vector2 uv1,uv2,uv3;
 		float area;
@@ -60,5 +60,5 @@ namespace Geometry
 		bool Intersect(Triangle&);
 	};
 
-	
+	void Translate(Object&,const Vector3&);
 }

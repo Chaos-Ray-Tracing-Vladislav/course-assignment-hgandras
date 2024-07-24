@@ -240,18 +240,14 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 		sceneSettings.materials.push_back(material);
 	}
 
-
-	//AABB
-	
-	
-
-	
-
 	//Final struct
 	sceneSettings.bgCol = Vector3(bgCol[0], bgCol[1], bgCol[2]);
 	sceneSettings.width = settings["image_settings"]["width"];
 	sceneSettings.height = settings["image_settings"]["height"];
 	sceneSettings.bucket_size = settings["image_settings"]["bucket_size"];
+
+	std::vector<int> active_lights_vec(1, lights.size());
+	sceneSettings.active_lights = active_lights_vec;
 
 	sceneSettings.matrix = matrix;
 	sceneSettings.position = position;

@@ -57,8 +57,15 @@ Vector3 RayTracer::traceRay(Ray& out, Vector3& finalColor,int bounces,bool use_a
 	Vector3 intersectionPoint = isec.t * out.dir + out.origin;
 	if (isec.material->type == MaterialType::DIFFUSE) {
 		Vector3 Lin; //Incoming light direction
+		int lightID = 0;
 		for (Light light : scene.sceneSettings.lights)
 		{
+			if (scene.sceneSettings.active_lights[lightID] == 0)
+			{
+				lightID++;
+				continue;
+			}
+
 			Lin = light.position - intersectionPoint;
 			float sphereArea = 4 * Lin.length() * Lin.length() * PI;
 			Ray shadowRay(intersectionPoint + scene.sceneSettings.EPSILON * isec.normal, Lin.norm());
@@ -103,7 +110,7 @@ Vector3 RayTracer::traceRay(Ray& out, Vector3& finalColor,int bounces,bool use_a
 					finalColor = finalColor + isec.material->albedo * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
 				
 			}
-			
+			lightID++;
 		}
 	}
 

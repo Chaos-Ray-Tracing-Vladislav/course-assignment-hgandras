@@ -19,7 +19,7 @@ public:
 	Scene scene;
 	ACTreenode root;
 	int maxTriangles = 1;
-	int maxDepth = 4;
+	int maxDepth = 10;
 
 	AccelerationTree(Scene&);
 	

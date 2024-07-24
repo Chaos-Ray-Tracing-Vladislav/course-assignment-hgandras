@@ -70,11 +70,13 @@ void Camera::Pedestal(float length)
 }
 
 void Camera::Pan(float angle)
-{
+{ 
 	float PI = acosf(-1);
 	float rad = angle / 360 * PI;
 	Matrix4 rotation = Matrix4::CreateRotation(0, rad, 0);
-	frame.transform = rotation * frame.transform;
+	Matrix4 t = Matrix4::CreateTranslation(-frame.position());
+	Matrix4 tInv = Matrix4::CreateTranslation(frame.position());
+	frame.transform = tInv * rotation * t * frame.transform;
 }
 
 void Camera::Tilt(float angle)
