@@ -114,4 +114,15 @@ namespace Geometry {
 				(triAABB.min.z <= max.z && triAABB.max.z >= min.z);
 	}
 
+	void Translate(Object& object, const Vector3& diff)
+	{
+		for (auto& triangle : object.triangles)
+		{
+			triangle.v1 = triangle.v1 + diff;
+			triangle.v2 = triangle.v2 + diff;
+			triangle.v3 = triangle.v3 + diff;
+		}
+	}
 }
+
+

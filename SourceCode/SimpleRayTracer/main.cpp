@@ -17,30 +17,64 @@ const std::string SCENE_PATH = "C:\\Gazsi\\Prog\\ChaosCamp\\RayTracing\\course-a
 void Task14()
 {
 	Settings settings;
-	Scene scene0 = Scene::FromFile(SCENE_PATH + "\\Task14\\scene1.crtscene",settings);
-	std::cout << "Scene read from file" << std::endl;
+	Scene scene0 = Scene::FromFile(SCENE_PATH + "\\Task15\\sceneFinal.crtscene",settings);
+	Geometry::Translate(scene0.sceneSettings.objects[1],Vector3(-30,0,-2));
+	Geometry::Translate(scene0.sceneSettings.objects[2], Vector3(-15, 0, -2));
+	Geometry::Translate(scene0.sceneSettings.objects[3], Vector3(0, 0, -2));
+	Geometry::Translate(scene0.sceneSettings.objects[4], Vector3(15, 0, -2));
+	scene0.sceneSettings.active_lights = {1,0,0,0};
+	std::cout << "Scene generated" << std::endl;
 	RayTracer renderer0(scene0);
 
-	const auto startBuckets{ std::chrono::high_resolution_clock::now() };
-	renderer0.ParallelBucketsRender(PATH + "\\PPM\\BucketActree1.ppm",true);
-	const auto endBuckets{ std::chrono::high_resolution_clock::now() };
-	long elapsed = std::chrono::duration_cast<std::chrono::seconds>(endBuckets - startBuckets).count();
+	int frame = 0;
+	int maxFrames = 60;
+	for (int i = 0; i < maxFrames; i++)
+	{
+		if(i == maxFrames/2)
+			renderer0.scene.sceneSettings.active_lights = { 1,1,0,0 };
+		renderer0.scene.camera.Truck(15.f/maxFrames);
+		renderer0.ParallelBucketsRender(PATH + std::format("\\PPM\\FinalAnimation\\frame{}.ppm",frame), true);
+		std::cout << std::format("Frame {} rendered", frame) << std::endl;
+		frame++;
+	}
+	
 
-	std::cout << "Scene1 rendered using ACTree and bucket rendering in " << elapsed << " seconds" << std::endl;
+	for (int i = 0; i < maxFrames; i++)
+	{
+		if (i == maxFrames / 2)
+			renderer0.scene.sceneSettings.active_lights = { 1,1,1,0 };
+		renderer0.scene.camera.Truck(15.f / maxFrames);
+		renderer0.ParallelBucketsRender(PATH + std::format("\\PPM\\FinalAnimation\\frame{}.ppm", frame), true);
+		std::cout << std::format("Frame {} rendered", frame) << std::endl;
+		frame++;
+	}
 
-	const auto startactree{ std::chrono::high_resolution_clock::now() };
-	renderer0.ACTreeRender(PATH + "\\PPM\\ACTree1.ppm");
-	const auto endactree{ std::chrono::high_resolution_clock::now() };
-	elapsed = std::chrono::duration_cast<std::chrono::seconds>(endactree - startactree).count();
+	for (int i = 0; i < maxFrames; i++)
+	{
+		if (i == maxFrames / 2)
+			renderer0.scene.sceneSettings.active_lights = { 1,1,1,1 };
+		renderer0.scene.camera.Truck(15.f / maxFrames);
+		renderer0.ParallelBucketsRender(PATH + std::format("\\PPM\\FinalAnimation\\frame{}.ppm", frame), true);
+		std::cout << std::format("Frame {} rendered", frame) << std::endl;
+		frame++;
+	}
 
-	std::cout << "Scene1 rendered using ACTree in " << elapsed << " seconds" << std::endl;
+	for (int i = 0; i < 20; i++)
+	{
+		renderer0.scene.camera.Pan(2.5);
+		renderer0.scene.camera.Truck(-0.2);
+		renderer0.ParallelBucketsRender(PATH + std::format("\\PPM\\FinalAnimation\\frame{}.ppm", frame), true);
+		std::cout << std::format("Frame {} rendered", frame) << std::endl;
+		frame++;
+	}
 
-	const auto start{std::chrono::high_resolution_clock::now()};
-	renderer0.Render(PATH + "\\PPM\\Sequential.ppm");
-	const auto end{ std::chrono::high_resolution_clock::now() };
-	elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
-	 
-	std::cout << "Scene1 rendered in sequential in " << elapsed << " seconds" << std::endl;
+	for (int i = 0; i < 20; i++)
+	{
+		renderer0.scene.camera.Dolly(0.2);
+		renderer0.ParallelBucketsRender(PATH + std::format("\\PPM\\FinalAnimation\\frame{}.ppm", frame), true);
+		std::cout << std::format("Frame {} rendered", frame) << std::endl;
+		frame++;
+	}
 }
 
 

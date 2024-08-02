@@ -24,6 +24,7 @@ struct Settings {
 	std::vector<Light> lights;
 	float k_ambient;
 	Vector3 ambientColor;
+	std::vector<int> active_lights;
 
 	//Materials
 	std::vector<Material> materials;
