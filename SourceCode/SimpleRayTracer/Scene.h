@@ -24,9 +24,9 @@ struct Scene {
 	Scene();
 
 	//At the moment does nothing, just here so the code compiles.
-	Scene(Camera cam, std::vector<Geometry::Triangle> geometry);
+	Scene(Camera, std::vector<Geometry::Triangle>);
 
-	Scene(Settings sceneSettings);
+	Scene(Settings);
 
-	static Scene FromFile(std::string path);
+	static Scene FromFile(std::string,Settings&);
 };

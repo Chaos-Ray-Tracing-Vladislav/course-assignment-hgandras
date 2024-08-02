@@ -11,13 +11,14 @@ namespace Geometry
 	{
 	
 		const Vector3 v1, v2, v3; //Positions of the vertices
-		const int id_v1, id_v2, id_v3; //Vertex indices
+		const Vector3 vertexIDs; //Vertex indices
+		Vector2 uv1,uv2,uv3;
 		float area;
 		Vector3 normal;
 		
 		Triangle();
 
-		Triangle(Vector3 v1, Vector3 v2, Vector3 v3, int id1, int id2, int id3);
+		Triangle(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 vertexIDs,Vector2 uv1,Vector2 uv2, Vector2 uv3);
 
 		/// <summary>
 		/// (These might change, this is just an idea at the moment)
@@ -37,6 +38,7 @@ namespace Geometry
 		std::vector<Geometry::Triangle> triangles;
 		std::vector<Vector3> vertex_normals;
 		int materialID;
+		std::vector<Vector3> uvs;
 	};
 
 	struct Intersection {
@@ -46,5 +48,7 @@ namespace Geometry
 		int objectID;
 		Vector3 normal; //This is here, because it is defferent from the triangle's normal when 
 			 			//smooth shading is used.
+		Vector3 barycentric;
+		Vector2 uv;
 	};
 }
