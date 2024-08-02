@@ -70,4 +70,48 @@ namespace Geometry {
 
 		return tmin < tmax;
 	}
+
+	std::tuple<AABB,AABB> AABB::Split(unsigned int axis) {
+		float mid;
+		AABB left,right;
+		left.min = min;
+		left.max = max;
+
+		right.min = min;
+		right.max = max;
+
+		float splitPlaneCoordinate;
+		switch (axis) {
+			case 0:
+				mid = (max.x - min.x) / 2;
+				splitPlaneCoordinate = min.x + mid;
+				left.max.x = splitPlaneCoordinate;
+				right.min.x = splitPlaneCoordinate;
+				break;
+			case 1:
+				mid = (max.y - min.y) / 2;
+				splitPlaneCoordinate = min.y + mid;
+				left.max.y = splitPlaneCoordinate;
+				right.min.y = splitPlaneCoordinate;
+				break;
+			case 2:
+				mid = (max.z - min.z) / 2;
+				splitPlaneCoordinate = min.z + mid;
+				left.max.z = splitPlaneCoordinate;
+				right.min.z = splitPlaneCoordinate;
+				break;
+		}
+		return std::tuple<AABB, AABB>(left, right);
+	}
+
+
+	bool AABB::Intersect(Triangle& triangle)
+	{
+		AABB triAABB{ Min(triangle.v1, Min(triangle.v2, triangle.v3)), Max(triangle.v1, Max(triangle.v2, triangle.v3)) };
+
+		return (triAABB.min.x <= max.x && triAABB.max.x >= min.x) &&
+				(triAABB.min.y <= max.y && triAABB.max.y >= min.y) &&
+				(triAABB.min.z <= max.z && triAABB.max.z >= min.z);
+	}
+
 }

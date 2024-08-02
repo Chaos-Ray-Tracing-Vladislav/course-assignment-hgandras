@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AccelerationTree.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Frame.cpp" />
     <ClCompile Include="Geometry.cpp" />
@@ -145,9 +146,11 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Threadpool.cpp" />
     <ClCompile Include="Threadpool.h" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AccelerationTree.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Frame.h" />
@@ -160,6 +163,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneSettings.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
