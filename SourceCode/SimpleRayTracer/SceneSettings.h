@@ -6,11 +6,12 @@
 #include "Texture.h"
 
 struct Settings {
-
+	 
 	//General
 	Vector3 bgCol;
 	int width;
 	int height;
+	int bucket_size = 24;
 
 	//Camera
 	std::vector<float> matrix;
@@ -36,6 +37,7 @@ struct Settings {
 	//Other
 	const float EPSILON = 1e-5;
 	const int MAX_BOUNCE = 5;
+	Geometry::AABB aabb;
 };
 
 

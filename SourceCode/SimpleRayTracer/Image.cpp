@@ -13,7 +13,10 @@ void Image::setPixel(int x, int y, Color value)
 
 Color Image::getPixel(int x, int y){ return image.at(y * w + x); }
 
-void Image::clear(){ image.clear(); }
+void Image::clear(){ 
+	image.clear();
+	image.insert(image.begin(), w * h, Color());
+}
 
 void Image::writePPM(std::string name)
 {

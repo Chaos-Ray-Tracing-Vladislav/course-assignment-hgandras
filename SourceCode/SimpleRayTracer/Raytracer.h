@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include <thread>
 
 class RayTracer
 {
@@ -16,6 +17,14 @@ public:
 	Scene scene;
 
 	RayTracer(Scene& scene);
+
+	void ParallelRegionsRender(std::string imgName);
+
+	void ParallelBucketsRender(std::string imgName);
+
+	void AABBRender(std::string imgName);
+
+	void RenderRegion( int, int, int, int);
 
 	void Render(std::string imgName);
 };

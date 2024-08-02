@@ -1,6 +1,6 @@
 #pragma once
 #include "Raytracer.h"
-
+#include "Threadpool.h"
 
 std::optional<Geometry::Intersection> RayTracer::IntersectRay(Ray& ray)
 {
@@ -80,7 +80,7 @@ Vector3 RayTracer::traceRay(Ray& out, Vector3& finalColor, int bounces)
 			float sphereArea = 4 * Lin.length() * Lin.length() * PI;
 			Ray shadowRay(intersectionPoint + scene.sceneSettings.EPSILON * isec.normal, Lin.norm());
 			auto shadow = IntersectRay(shadowRay);
-			if (!shadow || shadow.value().t > Lin.length() || shadow.value().material->type == MaterialType::REFRACTIVE)
+			if (isec.material->texturePtr!=nullptr && (!shadow || shadow.value().t > Lin.length() || shadow.value().material->type == MaterialType::REFRACTIVE))
 			{
 				switch (isec.material->texturePtr->type)
 				{
@@ -113,6 +113,8 @@ Vector3 RayTracer::traceRay(Ray& out, Vector3& finalColor, int bounces)
 					break;
 				}
 			}
+			else
+				finalColor = finalColor + isec.material->albedo * light.intensity / sphereArea * std::max(0.0f, Dot(Lin.norm(), isec.normal));
 		}
 	}
 
@@ -176,6 +178,7 @@ Vector3 RayTracer::traceRay(Ray& out, Vector3& finalColor, int bounces)
 RayTracer::RayTracer(Scene& scene) : scene(scene) {}
 
 void RayTracer::Render(std::string imgName) {
+	scene.image.clear();
 	for (int i = 0; i < scene.image.w * scene.image.h; i++)
 	{
 		int x = i % scene.image.w;
@@ -185,6 +188,90 @@ void RayTracer::Render(std::string imgName) {
 		Vector3 finalColor = Vector3::zero();
 		finalColor = 255 * Min(Vector3(1.f, 1.f, 1.f), traceRay(ray, finalColor, 0));
 		scene.image.setPixel(x, y, Color((int)finalColor.x, (int)finalColor.y, (int)finalColor.z));
+	}
+	scene.image.writePPM(imgName);
+}
+
+void RayTracer::RenderRegion(int px_w, int px_h, int region_w, int region_h)
+{
+	for (int h = px_h; h < px_h+region_h; h++)
+	{
+		for (int w = px_w; w < px_w+region_w; w++)
+		{
+			if (h >= scene.sceneSettings.height || w >= scene.sceneSettings.width)
+				continue;
+
+			Ray ray = scene.camera.CastRay(w, h);
+
+			Vector3 finalColor = Vector3::zero();
+			finalColor = 255 * Min(Vector3(1.f, 1.f, 1.f), traceRay(ray, finalColor, 0));
+			scene.image.setPixel(w, h, Color((int)finalColor.x, (int)finalColor.y, (int)finalColor.z));
+		}
+	}
+}
+
+void RayTracer::ParallelRegionsRender(std::string imgName)
+{
+	scene.image.clear();
+	std::vector<std::jthread> threads;
+	int num_threads = std::thread::hardware_concurrency();
+	int h_threads = sqrt(num_threads);
+	int w_threads = sqrt(num_threads);
+
+	int region_w = scene.sceneSettings.width / w_threads;
+	int region_h = scene.sceneSettings.height / h_threads;
+
+	for (int y = 0; y < h_threads; y++)
+	{
+		for (int x = 0; x < w_threads; x++)
+		{
+			threads.push_back(std::jthread(&RayTracer::RenderRegion,this,x*region_w, y*region_h, region_w, region_h));
+		}
+	}
+	threads.clear();
+	scene.image.writePPM(imgName);
+}
+
+void RayTracer::ParallelBucketsRender(std::string imgName)
+{
+	scene.image.clear();
+	ThreadPool thread_pool;
+	thread_pool.Start(std::thread::hardware_concurrency());
+
+	int w_threads = scene.sceneSettings.width / scene.sceneSettings.bucket_size;
+	int h_threads = scene.sceneSettings.height / scene.sceneSettings.bucket_size;
+
+	for (int y = 0; y < h_threads; y++)
+	{
+		for (int x = 0; x < w_threads; x++)
+		{
+			std::function<void()> func = std::bind(&RayTracer::RenderRegion, this, x * scene.sceneSettings.bucket_size, y * scene.sceneSettings.bucket_size, scene.sceneSettings.bucket_size, scene.sceneSettings.bucket_size);
+			thread_pool.AddTask(func);
+		}
+	}
+	thread_pool.WaitForAll();
+	scene.image.writePPM(imgName);
+}
+
+void RayTracer::AABBRender(std::string imgName)
+{
+	scene.image.clear();
+	for (int i = 0; i < scene.image.w * scene.image.h; i++)
+	{
+		int x = i % scene.image.w;
+		int y = i / scene.image.w;
+		Ray ray = scene.camera.CastRay(x, y);
+
+		if (scene.sceneSettings.aabb.Intersect(ray))
+		{
+			Vector3 finalColor = Vector3::zero();
+			finalColor = 255 * Min(Vector3(1.f, 1.f, 1.f), traceRay(ray, finalColor, 0));
+			scene.image.setPixel(x, y, Color((int)finalColor.x, (int)finalColor.y, (int)finalColor.z));
+		}
+		else
+		{
+			scene.image.setPixel(x, y, Color(255*scene.sceneSettings.bgCol.x, 255*scene.sceneSettings.bgCol.y, 255*scene.sceneSettings.bgCol.z));
+		}
 	}
 	scene.image.writePPM(imgName);
 }

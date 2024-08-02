@@ -22,7 +22,7 @@ Scene::Scene(Settings sceneSettings) : sceneSettings(sceneSettings)
 
 Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 {
-
+	Geometry::AABB aabb;
 	Image image;
 	Camera camera;
 
@@ -48,6 +48,14 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 	std::vector<float> vertices;
 	std::vector<float> uvs;
 
+	float maxX = std::numeric_limits<float>::min();
+	float maxY = std::numeric_limits<float>::min();
+	float maxZ = std::numeric_limits<float>::min();
+
+	float minX = std::numeric_limits<float>::max();
+	float minY = std::numeric_limits<float>::max();
+	float minZ = std::numeric_limits<float>::max();
+
 	for (int i = 0; i < geometry.size(); i++)
 	{
 		triangles.clear();
@@ -66,15 +74,29 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 		{
 			int ind0 = triangles[triangleID] * 3;
 			Vector3 v0(vertices[ind0], vertices[ind0 + 1], vertices[ind0 + 2]);
-			Vector2 uv1(uvs[ind0],uvs[ind0+1]);
-
+			 
 			int ind1 = triangles[triangleID + 1] * 3;
 			Vector3 v1(vertices[ind1], vertices[ind1 + 1], vertices[ind1 + 2]);
-			Vector2 uv2(uvs[ind1], uvs[ind1 + 1]);
+			
 
 			int ind2 = triangles[triangleID + 2] * 3;
 			Vector3 v2(vertices[ind2], vertices[ind2 + 1], vertices[ind2 + 2]);
-			Vector2 uv3(uvs[ind2], uvs[ind2 + 1]);
+			
+
+			Vector2 uv1, uv2, uv3;
+
+			if (uvs.size() == 0)
+			{
+				uv1 = Vector2::zero();
+				uv2 = Vector2::zero();
+				uv3 = Vector2::zero();
+			}
+			else
+			{
+				uv1 = Vector2(uvs[ind0], uvs[ind0 + 1]);
+				uv2 = Vector2(uvs[ind1], uvs[ind1 + 1]);
+				uv3 = Vector2(uvs[ind2], uvs[ind2 + 1]);
+			}
 
 			Geometry::Triangle tr(v0, v1, v2, Vector3(ind0 / 3, ind1 / 3, ind2 / 3),uv1,uv2,uv3);
 			faces.push_back(tr);
@@ -82,13 +104,33 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 			vertex_normals[ind0 / 3] = vertex_normals[ind0 / 3] + tr.normal;
 			vertex_normals[ind1 / 3] = vertex_normals[ind1 / 3] + tr.normal;
 			vertex_normals[ind2 / 3] = vertex_normals[ind2 / 3] + tr.normal;
+
 		}
 
 		for (int i = 0; i < vertex_normals.size(); i++)
 			vertex_normals[i] = vertex_normals[i].norm();
 
 		sceneSettings.objects.push_back(Geometry::Object{ faces,vertex_normals,geometry[i]["material_index"] });
+
+		//AABB
+		for (int i = 0; i < vertices.size(); i += 3)
+		{
+			float x = vertices[i];
+			float y = vertices[i + 1];
+			float z = vertices[i + 2];
+
+			maxX = std::max(maxX, x);
+			maxY = std::max(maxY, y);
+			maxZ = std::max(maxZ, z);
+
+			minX = std::min(minX, x);
+			minY = std::min(minY, y);
+			minZ = std::min(minZ, z);
+		}
 	}
+
+	aabb.max = Vector3(maxX, maxY, maxZ);
+	aabb.min = Vector3(minX, minY, minZ);
 
 	//Lights
 	nlohmann::json lights = data["lights"];
@@ -103,6 +145,7 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 		sceneSettings.lights.push_back(obj);
 	}
 
+#if TEXTURES
 	//Textures TODO: REFACTOR THIS I THINK
 	nlohmann::json texturesData = data["textures"];
 	std::map<std::string,Texture*> texturePtrs;
@@ -163,7 +206,7 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 		}
 		
 	}
-
+#endif
 	//Materials
 	nlohmann::json materialsData = data["materials"];
 	std::vector<float> albedo;
@@ -182,7 +225,8 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 		Material material;
 		albedo.clear();
 		mType = materialMap.find(materialsData[i]["type"])->second;
-		/*if (mType == MaterialType::DIFFUSE || mType == MaterialType::REFLECTIVE || mType == MaterialType::CONSTANT)
+#if !TEXTURES
+		if (mType == MaterialType::DIFFUSE || mType == MaterialType::REFLECTIVE || mType == MaterialType::CONSTANT)
 		{
 			albedo.insert(albedo.begin(), materialsData[i]["albedo"].begin(), materialsData[i]["albedo"].end());
 			material = { mType,Vector3(albedo[0],albedo[1],albedo[2]),materialsData[i]["smooth_shading"],-1 };
@@ -190,16 +234,26 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 		else if (mType == MaterialType::REFRACTIVE)
 		{
 			material = { mType, Vector3(-1,-1,-1), materialsData[i]["smooth_shading"],materialsData[i]["ior"] };
-		}*/
+		}
+#else
 		Texture* textureID = texturePtrs.find(materialsData[i]["albedo"])->second;
 		material = { mType, Vector3::zero(),materialsData[i]["smooth_shading"],-1,textureID };
+#endif
 		sceneSettings.materials.push_back(material);
 	}
+
+
+	//AABB
+	
+	
+
+	
 
 	//Final struct
 	sceneSettings.bgCol = Vector3(bgCol[0], bgCol[1], bgCol[2]);
 	sceneSettings.width = settings["image_settings"]["width"];
 	sceneSettings.height = settings["image_settings"]["height"];
+	sceneSettings.bucket_size = settings["image_settings"]["bucket_size"];
 
 	sceneSettings.matrix = matrix;
 	sceneSettings.position = position;
@@ -207,6 +261,7 @@ Scene Scene::FromFile(std::string path, Settings &sceneSettings)
 	//Ambient coefficient and ambient light
 	sceneSettings.k_ambient = 0.1;
 	sceneSettings.ambientColor = Vector3(1, 1, 1);
+	sceneSettings.aabb = aabb;
 
 	return Scene(sceneSettings);
 }

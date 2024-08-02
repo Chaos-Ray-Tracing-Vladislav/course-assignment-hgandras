@@ -51,4 +51,11 @@ namespace Geometry
 		Vector3 barycentric;
 		Vector2 uv;
 	};
+
+	struct AABB {
+		Vector3 min;
+		Vector3 max;
+
+		bool Intersect(Ray&);
+	};
 }
