@@ -6,7 +6,7 @@
 
 struct Settings {
 	//General
-	Color bgCol;
+	Vector3 bgCol;
 	int width;
 	int height;
 
@@ -26,8 +26,8 @@ struct Settings {
 	std::vector<Material> materials;
 
 	//Other
-	const float EPSILON = 1e-4;
-	const int MAX_BOUNCE = 2;
+	const float EPSILON = 1e-5;
+	const int MAX_BOUNCE = 5;
 };
 
 

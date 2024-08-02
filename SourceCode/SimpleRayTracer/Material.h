@@ -4,12 +4,17 @@
 enum MaterialType
 {
 	DIFFUSE,
-	REFLECTIVE
+	REFLECTIVE,
+	REFRACTIVE,
+	CONSTANT
 };
 
 struct Material {
 	MaterialType type;
 	Vector3 albedo;
 	bool smooth_shading;
+	float ior;
 };
+
+
 
